@@ -20,7 +20,8 @@ let store: Store | undefined
 /**
  * Which engine the host may use. A packaged app only ever runs the native
  * addon; in development the placeholder stands in when the addon is missing
- * for this platform (Linux has no binary), and SPACE_PIXL_ENGINE overrides.
+ * for this platform (Linux has none published; `pnpm engine:linux` builds one
+ * locally), and SPACE_PIXL_ENGINE overrides.
  */
 function engineMode(): EngineMode {
   const env = process.env['SPACE_PIXL_ENGINE']

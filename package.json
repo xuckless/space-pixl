@@ -26,6 +26,8 @@
     "build:mac": "pnpm run build && electron-builder --mac",
     "build:mac:arm64": "pnpm run build && electron-builder --mac --arm64",
     "build:mac:x64": "pnpm run build && electron-builder --mac --x64",
+    "engine:linux": "node scripts/engine-linux.mjs",
+    "build:linux": "node scripts/engine-linux.mjs --check && pnpm run build && electron-builder --linux --x64",
     "test": "node --import ./tests/register.mjs --experimental-strip-types --no-warnings --test tests/*.test.ts"
   },
   "dependencies": {

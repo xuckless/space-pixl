@@ -83,6 +83,24 @@ nsis:
   # electron-updater installs silently and relaunches.
   differentialPackage: true
 
+# Linux is a local testing target, not a shipped one: nothing publishes it and
+# the engine ships no Linux platform package. `pnpm engine:linux` compiles the
+# binding from the sibling pixl-engine checkout and drops the .node beside the
+# installed package, where the engine's loader looks first; asarUnpack above
+# then carries it into the build. AppImage runs anywhere (needs libfuse2), and
+# dist/linux-unpacked/space-pixl runs straight from the tree.
+linux:
+  executableName: space-pixl
+  category: Graphics
+  icon: build/icon.png
+  synopsis: Reclaim storage by re-encoding your photo library.
+  target:
+    - target: AppImage
+      arch: [x64]
+
+appImage:
+  artifactName: ${name}-${version}-${arch}.${ext}
+
 # Update assets live on the IDrive e2 bucket (S3-compatible). Publishing needs
 # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in the environment. The bucket is
 # named here because electron-builder does not expand ${env.*} in this block

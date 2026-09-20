@@ -28,6 +28,7 @@ src/shared/ipc.ts            channel names and the result types both sides share
 src/renderer/src/pages/      Optimise (analyse → recommend → dials → preview → convert) · Stats · Settings
 src/renderer/src/components/ AnalysisPanel · RecommendationPanel · DialsPanel · PreviewPanel · charts · ui
 tests/                       node --test over the pure modules (plan, recommend, db, mock)
+scripts/engine-linux.mjs     builds the engine binding for this Linux machine and installs it for local builds
 electron-builder.yml         packaging, signing, notarization, update feed
 .github/workflows/           ci · release-please · release · bump-engine
 ```
@@ -54,7 +55,8 @@ absent — that belongs to a separate app.
 ## The placeholder engine
 
 `@xuckless/pixl-engine` ships macOS and Windows binaries only. In development on any
-other platform the host falls back to `src/main/engine/mock.ts`: it reads real JPEG/PNG/WebP
+other platform without a locally built binding (see _Linux_ below) the host falls back
+to `src/main/engine/mock.ts`: it reads real JPEG/PNG/WebP
 headers, synthesises pixel statistics, estimates output sizes from the README ratios, and
 refuses what the shipped engine refuses (HEIC → `EncoderUnavailable`). Everything it
 produces is flagged in the UI and in the store (`engine = 'mock'`). A packaged build never
@@ -80,6 +82,31 @@ pnpm build:unpack   # unpacked app in dist/ for a local look
 Until `@xuckless/pixl-engine` is published the app runs without it and the Engine card
 shows "Unavailable". Add the dependency with
 `pnpm add @xuckless/pixl-engine` once it exists; nothing else changes.
+
+### Linux
+
+Nothing is published for Linux, but the app can be built, packaged and tested on a Linux
+machine without a GitHub Actions run. The engine binding is compiled from the sibling
+`pixl-engine` checkout (`../pixl-engine`, or `PIXL_ENGINE_DIR`) inside the engine's
+`pixl-dev` container, which carries the pinned Rust toolchain and libheif/libjxl headers,
+and the resulting `.node` is copied beside the installed `@xuckless/pixl-engine`, where its
+loader looks first. No dependency or lockfile changes, so the macOS and Windows builds are
+untouched.
+
+```sh
+pnpm engine:linux   # compile the binding in the pixl-dev container (built on first use) and install it
+pnpm dev            # now runs the native engine instead of the placeholder
+pnpm build:linux    # AppImage in dist/, plus dist/linux-unpacked/space-pixl to run directly
+```
+
+`pnpm engine:linux -- --host` compiles with the host's `cargo` instead of the container;
+`-- --no-build` only installs an already compiled `.node`. Rerun after `pnpm install`
+replaces the package and after any engine change.
+
+The binding links `libheif` and `libjxl` dynamically, so those runtime packages must be
+installed (Fedora ships both). HEIC decoding also needs `libheif-freeworld` from RPM Fusion.
+The AppImage needs `libfuse.so.2` (`fuse-libs` on Fedora) or can be run with
+`--appimage-extract-and-run`; the unpacked tree needs neither.
 
 ### Native addon packaging
 
