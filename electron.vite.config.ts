@@ -15,7 +15,7 @@ export default defineConfig({
         },
         // The native binding is required by name at runtime inside the
         // utility process; it must never be bundled.
-        external: ['@xuckless/pixl-engine']
+        external: ['@xuckless/pixl-engine', 'node:sqlite']
       }
     }
   },
