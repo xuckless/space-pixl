@@ -84,15 +84,16 @@ nsis:
   differentialPackage: true
 
 # Update assets live on the IDrive e2 bucket (S3-compatible). Publishing needs
-# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in the environment; the bucket name
-# comes from SPACE_PIXL_S3_BUCKET. The channel is derived from the version:
+# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in the environment. The bucket is
+# named here because electron-builder does not expand ${env.*} in this block
+# (a first release went out addressed to the literal macro). The channel is derived from the version:
 # 0.2.0 → latest.yml, 0.2.0-beta.1 → beta.yml, so prereleases never reach
 # stable users. The same block is compiled into the app as its update feed.
 publish:
   provider: s3
   endpoint: https://s3.us-midwest-1.idrivee2.com
   region: us-midwest-1
-  bucket: ${env.SPACE_PIXL_S3_BUCKET}
+  bucket: shipment
   path: /space-pixl
   acl: public-read
   # IDrive e2 serves buckets at <bucket>.s3.<region>.idrivee2.com. If the

@@ -81,7 +81,7 @@ Set in *Settings → Secrets and variables → Actions*.
 | `RELEASE_PLEASE_TOKEN` | secret (optional) | PAT with `repo` + `workflow`; without it release-please and the bump PR use `GITHUB_TOKEN` and their PRs carry no CI checks |
 | `AWS_ACCESS_KEY_ID` | secret | IDrive e2 access key (S3-compatible) |
 | `AWS_SECRET_ACCESS_KEY` | secret | IDrive e2 secret key |
-| `SPACE_PIXL_S3_BUCKET` | **variable** | bucket name that holds `space-pixl/` |
+| (bucket) | — | named directly in `electron-builder.yml` and `dev-app-update.yml` (`shipment`); electron-builder cannot read it from the environment |
 | `CSC_LINK` | secret (optional until signing) | base64 of the Developer ID Application `.p12`; unsigned build when absent |
 | `CSC_KEY_PASSWORD` | secret | password of that `.p12` |
 | `APPLE_ID` | secret | Apple ID used for notarization |

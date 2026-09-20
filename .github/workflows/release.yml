@@ -43,6 +43,10 @@ jobs:
           - name: Windows x64
             runner: windows-latest
             args: --win --x64
+    env:
+      # .npmrc references this for @xuckless/pixl-engine; every step that
+      # touches pnpm needs it, including the setup action's cache probe.
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -59,35 +63,48 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
-        env:
-          GITHUB_PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
 
       - name: Build renderer, preload and main
         run: pnpm exec electron-vite build
 
+      - name: Signing credentials (only those that exist)
+        # electron-builder treats an empty CSC_LINK as a certificate path and
+        # fails with "not a file", so unset secrets must stay unset. Without a
+        # macOS identity the build is unsigned; Squirrel.Mac will not accept
+        # such an update, but the pipeline itself is exercised end to end.
+        shell: bash
+        run: |
+          add() { if [ -n "$2" ]; then echo "$1=$2" >> "$GITHUB_ENV"; else echo "::notice::$1 not set"; fi; }
+          add CSC_LINK "$CSC_LINK_IN"
+          add CSC_KEY_PASSWORD "$CSC_KEY_PASSWORD_IN"
+          add APPLE_ID "$APPLE_ID_IN"
+          add APPLE_APP_SPECIFIC_PASSWORD "$APPLE_APP_SPECIFIC_PASSWORD_IN"
+          add APPLE_TEAM_ID "$APPLE_TEAM_ID_IN"
+          add WIN_CSC_LINK "$WIN_CSC_LINK_IN"
+          add WIN_CSC_KEY_PASSWORD "$WIN_CSC_KEY_PASSWORD_IN"
+        env:
+          CSC_LINK_IN: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD_IN: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_ID_IN: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD_IN: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID_IN: ${{ secrets.APPLE_TEAM_ID }}
+          WIN_CSC_LINK_IN: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD_IN: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+
       - name: Package and publish
         run: pnpm exec electron-builder ${{ matrix.args }} --publish always
         env:
-          # --- update feed (IDrive e2, S3-compatible) ---
+          # --- update feed (IDrive e2, S3-compatible); the bucket is named in
+          #     electron-builder.yml, since electron-builder does not expand
+          #     ${env.*} inside the publish block ---
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          SPACE_PIXL_S3_BUCKET: ${{ vars.SPACE_PIXL_S3_BUCKET }}
           # Recent AWS SDKs add CRC32 checksums to every upload, which many
           # S3-compatible stores reject; only send them when the API requires.
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
-          # --- macOS signing + notarization (Developer ID) ---
-          # Base64 of the .p12 export, and its password.
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          # --- Windows signing (optional; unsigned when absent) ---
-          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
-          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-          # Fail loudly if a mac build ends up unsigned rather than publishing
-          # an update that clients will reject.
+          # Look for a Developer ID identity in the keychain when no CSC_LINK
+          # is given; finding none yields an unsigned build with a warning.
           CSC_IDENTITY_AUTO_DISCOVERY: ${{ startsWith(matrix.runner, 'macos') && 'true' || 'false' }}
 
       - name: Keep installers as a workflow artifact too
