@@ -140,7 +140,11 @@ function accumulate(w: StatsWindow, r: ConversionRow): void {
 }
 
 export class Store {
-  private constructor(private readonly db: DatabaseSync) {}
+  private readonly db: DatabaseSync
+
+  private constructor(db: DatabaseSync) {
+    this.db = db
+  }
 
   static open(path: string): Store {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })

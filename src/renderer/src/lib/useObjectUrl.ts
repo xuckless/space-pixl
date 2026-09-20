@@ -1,18 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import type { RenderedImage } from '../../../shared/ipc'
 
 /** A blob: URL for a rendered image, revoked when it changes or unmounts. */
 export function useObjectUrl(image: RenderedImage | null | undefined): string | null {
-  const [url, setUrl] = useState<string | null>(null)
-  useEffect(() => {
-    if (!image) {
-      setUrl(null)
-      return
-    }
-    const blob = new Blob([image.bytes as BlobPart], { type: image.mime })
-    const next = URL.createObjectURL(blob)
-    setUrl(next)
-    return () => URL.revokeObjectURL(next)
-  }, [image])
+  const url = useMemo(
+    () =>
+      image ? URL.createObjectURL(new Blob([image.bytes as BlobPart], { type: image.mime })) : null,
+    [image]
+  )
+  useEffect(
+    () => () => {
+      if (url) URL.revokeObjectURL(url)
+    },
+    [url]
+  )
   return url
 }

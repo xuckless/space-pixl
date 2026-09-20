@@ -28,12 +28,12 @@ export const MOCK_VERSION = '0.0.0-mock'
 
 class MockPixlError extends Error {
   readonly name = 'PixlError'
-  constructor(
-    readonly code: string,
-    message: string,
-    readonly detail: Record<string, Record<string, unknown>>
-  ) {
+  readonly code: string
+  readonly detail: Record<string, Record<string, unknown>>
+  constructor(code: string, message: string, detail: Record<string, Record<string, unknown>>) {
     super(message)
+    this.code = code
+    this.detail = detail
   }
 }
 
