@@ -1,6 +1,6 @@
 {
   "name": "space-pixl",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Space Pixl — reclaim storage by re-encoding your photo library with the PIXL engine.",
   "main": "./out/main/index.js",
   "author": "xuckless",
