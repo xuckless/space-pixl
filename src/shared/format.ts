@@ -36,9 +36,10 @@ export function savingsEquivalent(bytes: number): string {
   const MB = 1024 * 1024
   const GB = 1024 * MB
   if (bytes < 3 * MB) return 'less than one phone photo'
-  if (bytes < GB) return `about ${Math.round(bytes / (3 * MB)).toLocaleString()} phone photos at 3 MB each`
+  if (bytes < GB)
+    return `about ${Math.round(bytes / (3 * MB)).toLocaleString()} phone photos at 3 MB each`
   if (bytes < 64 * GB)
-    return `about ${Math.round(bytes / (3 * MB)).toLocaleString()} phone photos, or ${(bytes / (256 * GB) * 100).toFixed(1)}% of a 256 GB phone`
+    return `about ${Math.round(bytes / (3 * MB)).toLocaleString()} phone photos, or ${((bytes / (256 * GB)) * 100).toFixed(1)}% of a 256 GB phone`
   return `${(bytes / (256 * GB)).toFixed(2)} × a 256 GB phone`
 }
 

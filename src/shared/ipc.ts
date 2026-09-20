@@ -1,11 +1,5 @@
 /** IPC channel names and the app-level types both sides of the bridge share. */
-import type {
-  ConvertReport,
-  Encode,
-  EngineFlavour,
-  ImageStats,
-  SourceInfo
-} from './engine-types'
+import type { ConvertReport, Encode, EngineFlavour, ImageStats, SourceInfo } from './engine-types'
 import type { Plan, TargetFormat } from './plan'
 import type { Recommendation } from './recommend'
 

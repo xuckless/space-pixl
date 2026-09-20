@@ -1,6 +1,14 @@
 import type { ReactNode } from 'react'
 
-export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }): React.JSX.Element {
+export function Field({
+  label,
+  hint,
+  children
+}: {
+  label: string
+  hint?: string
+  children: ReactNode
+}): React.JSX.Element {
   return (
     <label className="field">
       <span className="field-label">
@@ -53,7 +61,15 @@ export function Slider({
 }): React.JSX.Element {
   return (
     <span className="slider">
-      <input type="range" min={min} max={max} step={step} value={value} disabled={disabled} onChange={(e) => onChange(Number(e.target.value))} />
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
       <input
         type="number"
         className="slider-number"
@@ -85,17 +101,36 @@ export function Toggle({
 }): React.JSX.Element {
   return (
     <label className={`toggle ${disabled ? 'disabled' : ''}`}>
-      <input type="checkbox" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+      />
       <span>{label}</span>
     </label>
   )
 }
 
-export function Chip({ children, tone = '' }: { children: ReactNode; tone?: 'ok' | 'warn' | 'err' | '' }): React.JSX.Element {
+export function Chip({
+  children,
+  tone = ''
+}: {
+  children: ReactNode
+  tone?: 'ok' | 'warn' | 'err' | ''
+}): React.JSX.Element {
   return <span className={`badge ${tone}`}>{children}</span>
 }
 
-export function Stat({ label, value, sub }: { label: string; value: ReactNode; sub?: ReactNode }): React.JSX.Element {
+export function Stat({
+  label,
+  value,
+  sub
+}: {
+  label: string
+  value: ReactNode
+  sub?: ReactNode
+}): React.JSX.Element {
   return (
     <div className="stat">
       <div className="stat-label">{label}</div>

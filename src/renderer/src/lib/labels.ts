@@ -29,5 +29,8 @@ export function describeEncode(e: Encode): string {
   const v = encodeVariant(e)
   if (typeof e === 'string') return v
   const fields = (e as Record<string, Record<string, unknown>>)[v]
-  return [v, ...Object.entries(fields).map(([k, val]) => `${k.replace(/_/g, ' ')} ${String(val)}`)].join(' · ')
+  return [
+    v,
+    ...Object.entries(fields).map(([k, val]) => `${k.replace(/_/g, ' ')} ${String(val)}`)
+  ].join(' · ')
 }

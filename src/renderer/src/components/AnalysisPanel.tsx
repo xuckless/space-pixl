@@ -13,8 +13,14 @@ function HowItWasMade({ info }: { info: Inspection['info'] }): React.JSX.Element
   const rows: [string, string][] = []
   if (info.jpeg) {
     const j = info.jpeg
-    rows.push(['Quality', j.quality === null ? 'custom tables (not a libjpeg quality)' : `${j.quality} (libjpeg scale)`])
-    rows.push(['Chroma', j.subsampling ? subsamplingLabel(j.subsampling) : 'unusual (4:4:0 / 4:1:1)'])
+    rows.push([
+      'Quality',
+      j.quality === null ? 'custom tables (not a libjpeg quality)' : `${j.quality} (libjpeg scale)`
+    ])
+    rows.push([
+      'Chroma',
+      j.subsampling ? subsamplingLabel(j.subsampling) : 'unusual (4:4:0 / 4:1:1)'
+    ])
     rows.push(['Scan', j.progressive ? 'progressive' : 'baseline'])
     rows.push(['Huffman', j.optimized_huffman ? 'optimised tables' : 'standard tables'])
     rows.push(['Components', String(j.components)])
@@ -40,12 +46,21 @@ function HowItWasMade({ info }: { info: Inspection['info'] }): React.JSX.Element
   }
   if (info.jxl) {
     const j = info.jxl
-    rows.push(['JPEG reconstruction', j.has_jpeg_reconstruction ? 'yes — the original JPEG can be restored' : 'no'])
-    rows.push(['Lossless', j.lossless === null ? 'unknown (the file does not say)' : j.lossless ? 'yes' : 'no'])
+    rows.push([
+      'JPEG reconstruction',
+      j.has_jpeg_reconstruction ? 'yes — the original JPEG can be restored' : 'no'
+    ])
+    rows.push([
+      'Lossless',
+      j.lossless === null ? 'unknown (the file does not say)' : j.lossless ? 'yes' : 'no'
+    ])
   }
   if (info.tiff) {
     const t = info.tiff
-    rows.push(['Compression', t.compression ? t.compression : `tag ${t.compression_tag} (not writable by the engine)`])
+    rows.push([
+      'Compression',
+      t.compression ? t.compression : `tag ${t.compression_tag} (not writable by the engine)`
+    ])
     rows.push(['Predictor', String(t.predictor)])
     rows.push(['Planar', t.planar ? 'yes' : 'no'])
   }
@@ -92,7 +107,8 @@ export function AnalysisPanel({ inspection }: { inspection: Inspection }): React
             <div>
               <dt>Samples</dt>
               <dd>
-                {info.channels} channel{info.channels === 1 ? '' : 's'} · {info.bits}-bit in file · decodes to {info.depth === 'Eight' ? 8 : 16}-bit
+                {info.channels} channel{info.channels === 1 ? '' : 's'} · {info.bits}-bit in file ·
+                decodes to {info.depth === 'Eight' ? 8 : 16}-bit
               </dd>
             </div>
             <div>
@@ -100,14 +116,21 @@ export function AnalysisPanel({ inspection }: { inspection: Inspection }): React
               <dd>
                 {info.color}{' '}
                 <span className="muted">
-                  {info.color_source === 'IccProfile' ? '(embedded ICC profile)' : info.color_source === 'Cicp' ? '(CICP code points)' : '(nothing in the file said; assumed)'}
+                  {info.color_source === 'IccProfile'
+                    ? '(embedded ICC profile)'
+                    : info.color_source === 'Cicp'
+                      ? '(CICP code points)'
+                      : '(nothing in the file said; assumed)'}
                 </span>
               </dd>
             </div>
             {info.is_hdr && (
               <div>
                 <dt>HDR</dt>
-                <dd>PQ/HLG transfer{info.peak_nits ? ` · peak ${info.peak_nits} cd/m²` : ' · no peak recorded'}</dd>
+                <dd>
+                  PQ/HLG transfer
+                  {info.peak_nits ? ` · peak ${info.peak_nits} cd/m²` : ' · no peak recorded'}
+                </dd>
               </div>
             )}
             <div>
@@ -137,11 +160,14 @@ export function AnalysisPanel({ inspection }: { inspection: Inspection }): React
         </div>
         <div>
           <h3>The pixels</h3>
-          {!stats && inspection.statsError && <pre className="error">{errorText(inspection.statsError)}</pre>}
+          {!stats && inspection.statsError && (
+            <pre className="error">{errorText(inspection.statsError)}</pre>
+          )}
           {stats && (
             <>
               <div className="muted small">
-                {stats.space} · {stats.pixels_measured.toLocaleString()} pixels measured · decode {formatMs(stats.decode_ms)} · analyse {formatMs(stats.analyze_ms)}
+                {stats.space} · {stats.pixels_measured.toLocaleString()} pixels measured · decode{' '}
+                {formatMs(stats.decode_ms)} · analyse {formatMs(stats.analyze_ms)}
               </div>
               <Histogram counts={stats.luma_histogram.counts} />
               <div className="percentiles">
@@ -161,7 +187,8 @@ export function AnalysisPanel({ inspection }: { inspection: Inspection }): React
                 <div>
                   <dt>Saturation</dt>
                   <dd>
-                    mean {stats.mean_saturation.toFixed(3)} · {stats.neutral_pixels.toLocaleString()} neutral pixels
+                    mean {stats.mean_saturation.toFixed(3)} ·{' '}
+                    {stats.neutral_pixels.toLocaleString()} neutral pixels
                   </dd>
                 </div>
               </dl>
@@ -184,7 +211,11 @@ export function AnalysisPanel({ inspection }: { inspection: Inspection }): React
                       <td>{stats.channel_mean[i]?.toFixed(3)}</td>
                       <td>{pct(stats.clipped_low[i] ?? 0)}</td>
                       <td>{pct(stats.clipped_high[i] ?? 0)}</td>
-                      <td>{stats.grey_world_gain[i] == null ? '—' : stats.grey_world_gain[i]!.toFixed(3)}</td>
+                      <td>
+                        {stats.grey_world_gain[i] == null
+                          ? '—'
+                          : stats.grey_world_gain[i]!.toFixed(3)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -194,7 +225,13 @@ export function AnalysisPanel({ inspection }: { inspection: Inspection }): React
                   <Histogram key={i} counts={h.counts} color={channelColours[i]} height={40} />
                 ))}
               </div>
-              {stats.hue_histogram.length > 0 && <HueBars bins={stats.hue_histogram} neutral={stats.neutral_pixels} measured={stats.pixels_measured} />}
+              {stats.hue_histogram.length > 0 && (
+                <HueBars
+                  bins={stats.hue_histogram}
+                  neutral={stats.neutral_pixels}
+                  measured={stats.pixels_measured}
+                />
+              )}
             </>
           )}
           {inspection.recommendation.observations.length > 0 && (

@@ -125,7 +125,13 @@ export class EngineClient {
     if (msg.kind === 'hello') {
       this.status =
         msg.status === 'ready'
-          ? { status: 'ready', flavour: msg.flavour ?? 'native', version: msg.version, reason: msg.reason, restarts: this.status.restarts }
+          ? {
+              status: 'ready',
+              flavour: msg.flavour ?? 'native',
+              version: msg.version,
+              reason: msg.reason,
+              restarts: this.status.restarts
+            }
           : { status: 'unavailable', reason: msg.reason, restarts: this.status.restarts }
       log.info('engine', this.status)
       return
@@ -143,7 +149,10 @@ export class EngineClient {
     const child = this.child
     if (!child) {
       return Promise.reject(
-        new EngineError({ message: this.status.reason ?? 'engine host is not running', code: 'EngineUnavailable' })
+        new EngineError({
+          message: this.status.reason ?? 'engine host is not running',
+          code: 'EngineUnavailable'
+        })
       )
     }
     const id = this.nextId++

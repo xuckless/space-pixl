@@ -540,7 +540,11 @@ input[type='text'] {
 .stage {
   position: relative;
   margin-top: 10px;
-  background: repeating-conic-gradient(color-mix(in srgb, var(--border) 60%, transparent) 0 25%, transparent 0 50%) 0 0 / 16px 16px;
+  background: repeating-conic-gradient(
+      color-mix(in srgb, var(--border) 60%, transparent) 0 25%,
+      transparent 0 50%
+    )
+    0 0 / 16px 16px;
   border-radius: 8px;
   overflow: hidden;
   aspect-ratio: 3 / 2;

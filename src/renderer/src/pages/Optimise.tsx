@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AppError, Conversion, EngineStatus, Inspection, Preview } from '../../../shared/ipc'
-import { defaultPlan, describePlan, planIsLossless, planIsReversible, type Plan } from '../../../shared/plan'
+import {
+  defaultPlan,
+  describePlan,
+  planIsLossless,
+  planIsReversible,
+  type Plan
+} from '../../../shared/plan'
 import { formatBytes, formatMs, formatPercent, savingFraction } from '../../../shared/format'
 import { AnalysisPanel } from '../components/AnalysisPanel'
 import { RecommendationPanel } from '../components/RecommendationPanel'
@@ -11,7 +17,13 @@ import { errorText } from '../lib/labels'
 
 const PREVIEW_DEBOUNCE_MS = 450
 
-export function Optimise({ engine, cpus }: { engine: EngineStatus | undefined; cpus: number }): React.JSX.Element {
+export function Optimise({
+  engine,
+  cpus
+}: {
+  engine: EngineStatus | undefined
+  cpus: number
+}): React.JSX.Element {
   const [inspection, setInspection] = useState<Inspection | null>(null)
   const [inspecting, setInspecting] = useState(false)
   const [inspectError, setInspectError] = useState<AppError | null>(null)
@@ -89,19 +101,30 @@ export function Optimise({ engine, cpus }: { engine: EngineStatus | undefined; c
     <div className="optimise">
       <section className="card">
         <div className="row">
-          <button className="primary" onClick={() => void pick()} disabled={!ready || inspecting || converting}>
+          <button
+            className="primary"
+            onClick={() => void pick()}
+            disabled={!ready || inspecting || converting}
+          >
             {inspecting ? 'Analysing…' : inspection ? 'Choose another image…' : 'Choose an image…'}
           </button>
           {inspection && (
             <>
               <span className="mono">{inspection.fileName}</span>
-              <span className="muted small">{formatBytes(inspection.info.bytes)} · analysed in {formatMs(inspection.ms)}</span>
-              <button className="link" onClick={() => void window.spacePixl.files.reveal(inspection.path)}>
+              <span className="muted small">
+                {formatBytes(inspection.info.bytes)} · analysed in {formatMs(inspection.ms)}
+              </span>
+              <button
+                className="link"
+                onClick={() => void window.spacePixl.files.reveal(inspection.path)}
+              >
                 reveal
               </button>
             </>
           )}
-          {!ready && <span className="muted small">{engine?.reason ?? 'The engine is starting.'}</span>}
+          {!ready && (
+            <span className="muted small">{engine?.reason ?? 'The engine is starting.'}</span>
+          )}
         </div>
         {inspectError && <pre className="error">{errorText(inspectError)}</pre>}
       </section>
@@ -109,21 +132,42 @@ export function Optimise({ engine, cpus }: { engine: EngineStatus | undefined; c
       {inspection && (
         <div className="columns">
           <div className="column">
-            <RecommendationPanel recommendation={inspection.recommendation} bytes={inspection.info.bytes} current={plan} onChoose={setPlan} />
+            <RecommendationPanel
+              recommendation={inspection.recommendation}
+              bytes={inspection.info.bytes}
+              current={plan}
+              onChoose={setPlan}
+            />
             <DialsPanel plan={plan} info={inspection.info} cpus={cpus} onChange={setPlan} />
             <AnalysisPanel inspection={inspection} />
           </div>
           <div className="column sticky">
-            <PreviewPanel inspection={inspection} preview={preview} previewing={previewing} previewError={previewError} />
+            <PreviewPanel
+              inspection={inspection}
+              preview={preview}
+              previewing={previewing}
+              previewError={previewError}
+            />
             <section className="card">
               <h2>Convert</h2>
               <div className="row">
                 <span className="small">
-                  {describePlan(plan)} <Chip tone={planIsLossless(plan) ? 'ok' : 'warn'}>{planIsReversible(plan) ? 'reversible' : planIsLossless(plan) ? 'lossless' : 'lossy'}</Chip>
+                  {describePlan(plan)}{' '}
+                  <Chip tone={planIsLossless(plan) ? 'ok' : 'warn'}>
+                    {planIsReversible(plan)
+                      ? 'reversible'
+                      : planIsLossless(plan)
+                        ? 'lossless'
+                        : 'lossy'}
+                  </Chip>
                 </span>
               </div>
               <div className="row">
-                <button className="primary" onClick={() => void convert()} disabled={!ready || converting || previewing || !preview}>
+                <button
+                  className="primary"
+                  onClick={() => void convert()}
+                  disabled={!ready || converting || previewing || !preview}
+                >
                   {converting ? 'Converting…' : 'Convert beside the original'}
                 </button>
                 <span className="muted small">The original is never touched.</span>
@@ -133,14 +177,19 @@ export function Optimise({ engine, cpus }: { engine: EngineStatus | undefined; c
                 <div className="result">
                   <div className="row">
                     <Chip tone={conversion.savedBytes > 0 ? 'ok' : 'err'}>
-                      {conversion.savedBytes >= 0 ? `saved ${formatBytes(conversion.savedBytes)} (${formatPercent(savingFraction(conversion.inputBytes, conversion.outputBytes), 1)})` : `grew by ${formatBytes(-conversion.savedBytes)}`}
+                      {conversion.savedBytes >= 0
+                        ? `saved ${formatBytes(conversion.savedBytes)} (${formatPercent(savingFraction(conversion.inputBytes, conversion.outputBytes), 1)})`
+                        : `grew by ${formatBytes(-conversion.savedBytes)}`}
                     </Chip>
                     <span className="muted small">{formatMs(conversion.ms)}</span>
                     {conversion.engine === 'mock' && <Chip tone="warn">placeholder estimate</Chip>}
                   </div>
                   <div className="row">
                     <span className="mono small">{conversion.outputPath}</span>
-                    <button className="link" onClick={() => void window.spacePixl.files.reveal(conversion.outputPath)}>
+                    <button
+                      className="link"
+                      onClick={() => void window.spacePixl.files.reveal(conversion.outputPath)}
+                    >
                       reveal
                     </button>
                   </div>
@@ -153,8 +202,15 @@ export function Optimise({ engine, cpus }: { engine: EngineStatus | undefined; c
 
       {!inspection && !inspecting && (
         <section className="card empty">
-          <p>Pick an image. Space Pixl will probe the file, measure its pixels, work out how it was encoded, and recommend a conversion — then show you the real result before writing anything.</p>
-          <p className="muted small">Reads JPEG, PNG, HEIC, AVIF, JPEG XL, TIFF, WebP and camera RAW. Writes JPEG XL, AVIF, WebP, JPEG, PNG, TIFF and DNG.</p>
+          <p>
+            Pick an image. Space Pixl will probe the file, measure its pixels, work out how it was
+            encoded, and recommend a conversion — then show you the real result before writing
+            anything.
+          </p>
+          <p className="muted small">
+            Reads JPEG, PNG, HEIC, AVIF, JPEG XL, TIFF, WebP and camera RAW. Writes JPEG XL, AVIF,
+            WebP, JPEG, PNG, TIFF and DNG.
+          </p>
         </section>
       )}
     </div>

@@ -332,7 +332,9 @@ export function planEncode(plan: Plan): Encode {
     case 'jxl-repack':
       return { JxlJpegRepack: { effort: plan.jxlRepack.effort, threads: t } }
     case 'jxl-lossy':
-      return { JxlLossy: { distance: plan.jxlLossy.distance, effort: plan.jxlLossy.effort, threads: t } }
+      return {
+        JxlLossy: { distance: plan.jxlLossy.distance, effort: plan.jxlLossy.effort, threads: t }
+      }
     case 'jxl-lossless':
       return { JxlLossless: { effort: plan.jxlLossless.effort, threads: t } }
     case 'jpeg-from-jxl':
@@ -434,7 +436,9 @@ export function describePlan(plan: Plan): string {
     case 'tiff':
       return `TIFF · ${plan.tiff.compression.toLowerCase()}`
     case 'webp':
-      return plan.webp.lossless ? 'WebP lossless' : `WebP · q${plan.webp.quality} · method ${plan.webp.method}`
+      return plan.webp.lossless
+        ? 'WebP lossless'
+        : `WebP · q${plan.webp.quality} · method ${plan.webp.method}`
     case 'dng':
       return `DNG · ${plan.dng.compression.toLowerCase()}`
   }
@@ -488,7 +492,13 @@ function colorFor(plan: Plan): ColorPolicy {
     case 'Assign':
       return { Assign: { to: c.to } }
     case 'ConvertTo':
-      return { ConvertTo: { to: c.to, intent: c.intent, black_point_compensation: c.blackPointCompensation } }
+      return {
+        ConvertTo: {
+          to: c.to,
+          intent: c.intent,
+          black_point_compensation: c.blackPointCompensation
+        }
+      }
     case 'ToneMap':
       return {
         ToneMap: {
@@ -552,7 +562,11 @@ export function buildConvertRequest(
     raw: info.input === 'Raw' && plan.target !== 'dng' ? rawFor(plan) : null,
     upscaler: null,
     grade: null,
-    dither: passthrough ? 'None' : plan.dither.mode === 'None' ? 'None' : { TriangularNoise: { seed: plan.dither.seed } }
+    dither: passthrough
+      ? 'None'
+      : plan.dither.mode === 'None'
+        ? 'None'
+        : { TriangularNoise: { seed: plan.dither.seed } }
   }
 }
 

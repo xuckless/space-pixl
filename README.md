@@ -57,10 +57,10 @@ Each per-arch build therefore carries exactly one engine binary.
    builds macOS arm64, macOS x64 and Windows x64, signs and notarizes macOS, and
    uploads installers plus `latest*.yml` / `beta*.yml` manifests to the S3 bucket.
 4. Installed apps check the bucket on launch and every 4 hours, download in the
-   background, and install on quit or when the user clicks *Restart to update*.
+   background, and install on quit or when the user clicks _Restart to update_.
 
 **Channels.** The channel is derived from the version: `0.3.0` publishes to `latest`,
-`0.3.0-beta.1` publishes to `beta`. Users on *Stable* never see prereleases. To cut a
+`0.3.0-beta.1` publishes to `beta`. Users on _Stable_ never see prereleases. To cut a
 beta, set `"prerelease": true` and a `prerelease-type` in `release-please-config.json`
 on a release branch, or run `release.yml` by hand on a `v0.3.0-beta.1` tag.
 
@@ -69,26 +69,26 @@ sends this repo a `repository_dispatch` (`pixl-engine-released`). `bump-engine.y
 opens a `fix(engine): bump pixl-engine to X` PR. Merge it and release-please cuts a
 patch release carrying the new engine. Nothing ships automatically without that merge.
 
-**Manual build.** *Actions → Release → Run workflow* with a tag name.
+**Manual build.** _Actions → Release → Run workflow_ with a tag name.
 
 ## Secrets and variables
 
-Set in *Settings → Secrets and variables → Actions*.
+Set in _Settings → Secrets and variables → Actions_.
 
-| Name | Kind | Purpose |
-|---|---|---|
-| `PACKAGES_TOKEN` | secret | classic PAT with `read:packages` for `@xuckless/pixl-engine` (GitHub forbids secret names starting with `GITHUB_`; workflows hand it to `actions/setup-node` as `NODE_AUTH_TOKEN`) |
-| `RELEASE_PLEASE_TOKEN` | secret (optional) | PAT with `repo` + `workflow`; without it release-please and the bump PR use `GITHUB_TOKEN` and their PRs carry no CI checks |
-| `AWS_ACCESS_KEY_ID` | secret | IDrive e2 access key (S3-compatible) |
-| `AWS_SECRET_ACCESS_KEY` | secret | IDrive e2 secret key |
-| (bucket) | — | named directly in `electron-builder.yml` and `dev-app-update.yml` (`shipment`); electron-builder cannot read it from the environment |
-| `CSC_LINK` | secret (optional until signing) | base64 of the Developer ID Application `.p12`; unsigned build when absent |
-| `CSC_KEY_PASSWORD` | secret | password of that `.p12` |
-| `APPLE_ID` | secret | Apple ID used for notarization |
-| `APPLE_APP_SPECIFIC_PASSWORD` | secret | app-specific password for that Apple ID |
-| `APPLE_TEAM_ID` | secret | 10-character team id |
-| `WIN_CSC_LINK` | secret (optional) | base64 of a Windows code-signing `.pfx`; unsigned when absent |
-| `WIN_CSC_KEY_PASSWORD` | secret (optional) | its password |
+| Name                          | Kind                            | Purpose                                                                                                                                                                            |
+| ----------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PACKAGES_TOKEN`              | secret                          | classic PAT with `read:packages` for `@xuckless/pixl-engine` (GitHub forbids secret names starting with `GITHUB_`; workflows hand it to `actions/setup-node` as `NODE_AUTH_TOKEN`) |
+| `RELEASE_PLEASE_TOKEN`        | secret (optional)               | PAT with `repo` + `workflow`; without it release-please and the bump PR use `GITHUB_TOKEN` and their PRs carry no CI checks                                                        |
+| `AWS_ACCESS_KEY_ID`           | secret                          | IDrive e2 access key (S3-compatible)                                                                                                                                               |
+| `AWS_SECRET_ACCESS_KEY`       | secret                          | IDrive e2 secret key                                                                                                                                                               |
+| (bucket)                      | —                               | named directly in `electron-builder.yml` and `dev-app-update.yml` (`shipment`); electron-builder cannot read it from the environment                                               |
+| `CSC_LINK`                    | secret (optional until signing) | base64 of the Developer ID Application `.p12`; unsigned build when absent                                                                                                          |
+| `CSC_KEY_PASSWORD`            | secret                          | password of that `.p12`                                                                                                                                                            |
+| `APPLE_ID`                    | secret                          | Apple ID used for notarization                                                                                                                                                     |
+| `APPLE_APP_SPECIFIC_PASSWORD` | secret                          | app-specific password for that Apple ID                                                                                                                                            |
+| `APPLE_TEAM_ID`               | secret                          | 10-character team id                                                                                                                                                               |
+| `WIN_CSC_LINK`                | secret (optional)               | base64 of a Windows code-signing `.pfx`; unsigned when absent                                                                                                                      |
+| `WIN_CSC_KEY_PASSWORD`        | secret (optional)               | its password                                                                                                                                                                       |
 
 Bucket requirements: objects under `space-pixl/` must be publicly readable (the
 publisher sets `public-read`; the bucket's own policy must allow it), and the

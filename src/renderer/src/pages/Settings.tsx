@@ -61,7 +61,10 @@ export function Settings({
           {engine?.reason && <span className="muted small">{engine.reason}</span>}
         </div>
         <p className="muted small">
-          The PIXL engine runs in its own process; a crash restarts it without taking the app down. A packaged build only ever uses the native engine. In development, when no binary exists for this platform, a placeholder stands in so the interface can be exercised — every number it reports is an estimate and is marked as such.
+          The PIXL engine runs in its own process; a crash restarts it without taking the app down.
+          A packaged build only ever uses the native engine. In development, when no binary exists
+          for this platform, a placeholder stands in so the interface can be exercised — every
+          number it reports is an estimate and is marked as such.
         </p>
       </section>
 
@@ -70,11 +73,16 @@ export function Settings({
         <div className="row">
           <Chip tone={ul.tone}>{ul.text}</Chip>
           {u?.error && <span className="muted">{u.error}</span>}
-          {u?.lastCheckedAt && <span className="muted">checked {new Date(u.lastCheckedAt).toLocaleTimeString()}</span>}
+          {u?.lastCheckedAt && (
+            <span className="muted">checked {new Date(u.lastCheckedAt).toLocaleTimeString()}</span>
+          )}
           <span className="spacer" />
           <label className="muted">
             Channel{' '}
-            <select value={u?.channel ?? 'latest'} onChange={(e) => void onChannel(e.target.value as UpdateChannel)}>
+            <select
+              value={u?.channel ?? 'latest'}
+              onChange={(e) => void onChannel(e.target.value as UpdateChannel)}
+            >
               <option value="latest">Stable</option>
               <option value="beta">Beta</option>
             </select>
@@ -84,12 +92,22 @@ export function Settings({
           <div className="row">
             <progress max={100} value={u.progress.percent} />
             <span className="muted">
-              {formatBytes(u.progress.transferred)} / {formatBytes(u.progress.total)} · {formatBytes(u.progress.bytesPerSecond)}/s
+              {formatBytes(u.progress.transferred)} / {formatBytes(u.progress.total)} ·{' '}
+              {formatBytes(u.progress.bytesPerSecond)}/s
             </span>
           </div>
         )}
         <div className="row">
-          <button onClick={() => void onCheck()} disabled={busy || !u || u.phase === 'disabled' || u.phase === 'checking' || u.phase === 'downloading'}>
+          <button
+            onClick={() => void onCheck()}
+            disabled={
+              busy ||
+              !u ||
+              u.phase === 'disabled' ||
+              u.phase === 'checking' ||
+              u.phase === 'downloading'
+            }
+          >
             Check for updates
           </button>
           {u?.phase === 'downloaded' && (

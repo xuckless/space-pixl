@@ -29,7 +29,13 @@ export function RecommendationPanel({
     <section className="card">
       <h2>Recommendation</h2>
       <div className="row">
-        <Chip tone={tone}>{r.verdict === 'convert' ? 'Worth converting' : r.verdict === 'marginal' ? 'Marginal' : 'Leave it'}</Chip>
+        <Chip tone={tone}>
+          {r.verdict === 'convert'
+            ? 'Worth converting'
+            : r.verdict === 'marginal'
+              ? 'Marginal'
+              : 'Leave it'}
+        </Chip>
         <strong>{r.headline}</strong>
       </div>
       {r.reasons.length > 0 && (
@@ -43,13 +49,22 @@ export function RecommendationPanel({
         {r.candidates.map((c) => {
           const selected = JSON.stringify(c.plan) === currentKey
           return (
-            <div key={c.id} className={`candidate ${c.recommended ? 'recommended' : ''} ${selected ? 'selected' : ''}`}>
+            <div
+              key={c.id}
+              className={`candidate ${c.recommended ? 'recommended' : ''} ${selected ? 'selected' : ''}`}
+            >
               <div className="row">
                 <strong>{c.title}</strong>
-                <Chip tone={c.tier === 'reversible' || c.tier === 'lossless' ? 'ok' : ''}>{TIER_LABEL[c.tier]}</Chip>
+                <Chip tone={c.tier === 'reversible' || c.tier === 'lossless' ? 'ok' : ''}>
+                  {TIER_LABEL[c.tier]}
+                </Chip>
                 {c.recommended && <Chip tone="ok">Recommended</Chip>}
                 <span className="spacer" />
-                <button className={selected ? '' : 'primary'} disabled={selected} onClick={() => onChoose(c.plan)}>
+                <button
+                  className={selected ? '' : 'primary'}
+                  disabled={selected}
+                  onClick={() => onChoose(c.plan)}
+                >
                   {selected ? 'In use' : 'Use'}
                 </button>
               </div>
@@ -68,7 +83,10 @@ export function RecommendationPanel({
           )
         })}
       </div>
-      <p className="muted small">Expected savings come from the engine&apos;s measured reference files; the preview on the right is the truth for this one.</p>
+      <p className="muted small">
+        Expected savings come from the engine&apos;s measured reference files; the preview on the
+        right is the truth for this one.
+      </p>
     </section>
   )
 }

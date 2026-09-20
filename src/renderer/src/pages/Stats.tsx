@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import type { ConversionRow, StatsSummary } from '../../../shared/ipc'
-import { formatBytes, formatMs, formatPercent, savingFraction, savingsEquivalent } from '../../../shared/format'
+import {
+  formatBytes,
+  formatMs,
+  formatPercent,
+  savingFraction,
+  savingsEquivalent
+} from '../../../shared/format'
 import { TARGETS } from '../../../shared/plan'
 import { DailyBars } from '../components/charts'
 import { Chip, Stat } from '../components/ui'
@@ -9,7 +15,13 @@ function fileName(p: string): string {
   return p.split(/[\\/]/).pop() ?? p
 }
 
-function Rows({ rows, showDate }: { rows: ConversionRow[]; showDate?: boolean }): React.JSX.Element {
+function Rows({
+  rows,
+  showDate
+}: {
+  rows: ConversionRow[]
+  showDate?: boolean
+}): React.JSX.Element {
   if (rows.length === 0) return <p className="muted small">Nothing yet.</p>
   return (
     <table className="table">
@@ -33,19 +45,23 @@ function Rows({ rows, showDate }: { rows: ConversionRow[]; showDate?: boolean })
               <td title={r.sourcePath}>
                 <span className="mono">{fileName(r.sourcePath)}</span>
                 {r.outputPath && (
-                  <button className="link" onClick={() => void window.spacePixl.files.reveal(r.outputPath!)}>
+                  <button
+                    className="link"
+                    onClick={() => void window.spacePixl.files.reveal(r.outputPath!)}
+                  >
                     reveal
                   </button>
                 )}
               </td>
               <td>
-                {TARGETS[r.target]?.extension.toUpperCase() ?? r.target} <span className="muted small">{r.description}</span>
+                {TARGETS[r.target]?.extension.toUpperCase() ?? r.target}{' '}
+                <span className="muted small">{r.description}</span>
               </td>
               <td className="num">{formatBytes(r.inputBytes)}</td>
               <td className="num">{r.outputBytes === null ? '—' : formatBytes(r.outputBytes)}</td>
               <td className="num">
                 {r.status === 'error' ? (
-                  <Chip tone="err" >failed</Chip>
+                  <Chip tone="err">failed</Chip>
                 ) : saved !== null ? (
                   <span className={saved >= 0 ? 'ok-text' : 'err-text'}>
                     {formatPercent(savingFraction(r.inputBytes, r.outputBytes ?? 0), 0)}
@@ -55,7 +71,11 @@ function Rows({ rows, showDate }: { rows: ConversionRow[]; showDate?: boolean })
                 )}
               </td>
               <td className="row">
-                {r.reversible ? <Chip tone="ok">reversible</Chip> : r.lossless ? <Chip tone="ok">lossless</Chip> : null}
+                {r.reversible ? (
+                  <Chip tone="ok">reversible</Chip>
+                ) : r.lossless ? (
+                  <Chip tone="ok">lossless</Chip>
+                ) : null}
                 {r.engine === 'mock' && <Chip tone="warn">placeholder</Chip>}
               </td>
             </tr>
@@ -75,7 +95,8 @@ export function Stats({ active }: { active: boolean }): React.JSX.Element {
   }, [active])
 
   const clear = async (): Promise<void> => {
-    if (!window.confirm('Clear the whole conversion history? The files themselves are untouched.')) return
+    if (!window.confirm('Clear the whole conversion history? The files themselves are untouched.'))
+      return
     setSummary(await window.spacePixl.stats.clear())
   }
 
@@ -93,16 +114,45 @@ export function Stats({ active }: { active: boolean }): React.JSX.Element {
           <div className="muted">{savingsEquivalent(life.savedBytes)}</div>
         </div>
         <div className="tiles">
-          <Stat label="Files converted" value={life.converted.toLocaleString()} sub={life.failed > 0 ? `${life.failed} failed` : undefined} />
-          <Stat label="Average reduction" value={formatPercent(avg, 1)} sub={`${formatBytes(life.inputBytes)} → ${formatBytes(life.outputBytes)}`} />
-          <Stat label="This month" value={formatBytes(month.savedBytes)} sub={`${month.converted} file${month.converted === 1 ? '' : 's'}`} />
-          <Stat label="Images analysed" value={life.analysed.toLocaleString()} sub={`${month.analysed} this month`} />
-          <Stat label="Saved without loss" value={formatBytes(summary.losslessSavedBytes)} sub={`${formatBytes(summary.reversibleSavedBytes)} of it fully reversible`} />
-          <Stat label="Engine time" value={formatMs(life.engineMs)} sub={life.converted > 0 ? `${formatMs(Math.round(life.engineMs / life.converted))} per file` : undefined} />
+          <Stat
+            label="Files converted"
+            value={life.converted.toLocaleString()}
+            sub={life.failed > 0 ? `${life.failed} failed` : undefined}
+          />
+          <Stat
+            label="Average reduction"
+            value={formatPercent(avg, 1)}
+            sub={`${formatBytes(life.inputBytes)} → ${formatBytes(life.outputBytes)}`}
+          />
+          <Stat
+            label="This month"
+            value={formatBytes(month.savedBytes)}
+            sub={`${month.converted} file${month.converted === 1 ? '' : 's'}`}
+          />
+          <Stat
+            label="Images analysed"
+            value={life.analysed.toLocaleString()}
+            sub={`${month.analysed} this month`}
+          />
+          <Stat
+            label="Saved without loss"
+            value={formatBytes(summary.losslessSavedBytes)}
+            sub={`${formatBytes(summary.reversibleSavedBytes)} of it fully reversible`}
+          />
+          <Stat
+            label="Engine time"
+            value={formatMs(life.engineMs)}
+            sub={
+              life.converted > 0
+                ? `${formatMs(Math.round(life.engineMs / life.converted))} per file`
+                : undefined
+            }
+          />
         </div>
         {summary.mockRows > 0 && (
           <p className="warn small">
-            {summary.mockRows} of these rows came from the placeholder engine; their sizes are estimates.
+            {summary.mockRows} of these rows came from the placeholder engine; their sizes are
+            estimates.
           </p>
         )}
       </section>
@@ -133,7 +183,9 @@ export function Stats({ active }: { active: boolean }): React.JSX.Element {
                     <td>{TARGETS[t.target]?.label ?? t.target}</td>
                     <td className="num">{t.files}</td>
                     <td className="num">{formatBytes(t.savedBytes)}</td>
-                    <td className="num">{formatPercent(savingFraction(t.inputBytes, t.outputBytes), 0)}</td>
+                    <td className="num">
+                      {formatPercent(savingFraction(t.inputBytes, t.outputBytes), 0)}
+                    </td>
                   </tr>
                 ))}
               </tbody>

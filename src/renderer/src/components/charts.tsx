@@ -2,7 +2,15 @@ import type { HueBin } from '../../../shared/engine-types'
 import { formatBytes } from '../../../shared/format'
 
 /** A luma or channel histogram as a filled area, log-scaled so shadows and highlights both read. */
-export function Histogram({ counts, color = 'var(--accent)', height = 72 }: { counts: number[]; color?: string; height?: number }): React.JSX.Element {
+export function Histogram({
+  counts,
+  color = 'var(--accent)',
+  height = 72
+}: {
+  counts: number[]
+  color?: string
+  height?: number
+}): React.JSX.Element {
   const n = counts.length
   if (n === 0) return <svg className="histogram" viewBox="0 0 256 72" />
   const max = Math.max(1, ...counts)
@@ -14,14 +22,35 @@ export function Histogram({ counts, color = 'var(--accent)', height = 72 }: { co
   })
   const d = `M0,${height} L${points.join(' L')} L${w},${height} Z`
   return (
-    <svg className="histogram" viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none" role="img" aria-label="histogram">
-      <path d={d} fill={color} fillOpacity={0.35} stroke={color} strokeWidth={1} vectorEffect="non-scaling-stroke" />
+    <svg
+      className="histogram"
+      viewBox={`0 0 ${w} ${height}`}
+      preserveAspectRatio="none"
+      role="img"
+      aria-label="histogram"
+    >
+      <path
+        d={d}
+        fill={color}
+        fillOpacity={0.35}
+        stroke={color}
+        strokeWidth={1}
+        vectorEffect="non-scaling-stroke"
+      />
     </svg>
   )
 }
 
 /** Twelve hue bins around the wheel, each bar coloured by its hue and sized by its share of pixels. */
-export function HueBars({ bins, neutral, measured }: { bins: HueBin[]; neutral: number; measured: number }): React.JSX.Element {
+export function HueBars({
+  bins,
+  neutral,
+  measured
+}: {
+  bins: HueBin[]
+  neutral: number
+  measured: number
+}): React.JSX.Element {
   const total = Math.max(1, bins.reduce((a, b) => a + b.count, 0) + neutral)
   const max = Math.max(1, ...bins.map((b) => b.count), neutral)
   return (
@@ -30,20 +59,40 @@ export function HueBars({ bins, neutral, measured }: { bins: HueBin[]; neutral: 
         const mid = (b.hue_start + b.hue_end) / 2
         const h = (b.count / max) * 100
         return (
-          <div key={b.hue_start} className="hue-bar" title={`${b.hue_start.toFixed(0)}–${b.hue_end.toFixed(0)}°: ${((b.count / total) * 100).toFixed(1)}%, saturation ${(b.mean_saturation * 100).toFixed(0)}%`}>
-            <div className="hue-fill" style={{ height: `${h}%`, background: `hsl(${mid} ${Math.round(40 + b.mean_saturation * 60)}% 55%)` }} />
+          <div
+            key={b.hue_start}
+            className="hue-bar"
+            title={`${b.hue_start.toFixed(0)}–${b.hue_end.toFixed(0)}°: ${((b.count / total) * 100).toFixed(1)}%, saturation ${(b.mean_saturation * 100).toFixed(0)}%`}
+          >
+            <div
+              className="hue-fill"
+              style={{
+                height: `${h}%`,
+                background: `hsl(${mid} ${Math.round(40 + b.mean_saturation * 60)}% 55%)`
+              }}
+            />
           </div>
         )
       })}
-      <div className="hue-bar" title={`neutral: ${((neutral / Math.max(1, measured)) * 100).toFixed(1)}%`}>
-        <div className="hue-fill" style={{ height: `${(neutral / max) * 100}%`, background: 'var(--muted)' }} />
+      <div
+        className="hue-bar"
+        title={`neutral: ${((neutral / Math.max(1, measured)) * 100).toFixed(1)}%`}
+      >
+        <div
+          className="hue-fill"
+          style={{ height: `${(neutral / max) * 100}%`, background: 'var(--muted)' }}
+        />
       </div>
     </div>
   )
 }
 
 /** Daily savings, one bar per day, hover for the number. */
-export function DailyBars({ points }: { points: { day: string; savedBytes: number; files: number }[] }): React.JSX.Element {
+export function DailyBars({
+  points
+}: {
+  points: { day: string; savedBytes: number; files: number }[]
+}): React.JSX.Element {
   const max = Math.max(1, ...points.map((p) => Math.max(0, p.savedBytes)))
   const w = 600
   const h = 140
@@ -58,7 +107,15 @@ export function DailyBars({ points }: { points: { day: string; savedBytes: numbe
           const x = i * (bw + gap)
           return (
             <g key={p.day}>
-              <rect x={x} y={h - bh} width={bw} height={bh} rx={2} fill="var(--accent)" fillOpacity={p.savedBytes > 0 ? 0.85 : 0.15}>
+              <rect
+                x={x}
+                y={h - bh}
+                width={bw}
+                height={bh}
+                rx={2}
+                fill="var(--accent)"
+                fillOpacity={p.savedBytes > 0 ? 0.85 : 0.15}
+              >
                 <title>{`${p.day}: ${formatBytes(p.savedBytes)} across ${p.files} file${p.files === 1 ? '' : 's'}`}</title>
               </rect>
               {(i === 0 || i === points.length - 1 || i % 7 === 0) && (

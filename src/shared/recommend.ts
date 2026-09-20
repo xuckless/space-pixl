@@ -140,26 +140,36 @@ export function observe(stats: ImageStats | null): string[] {
   const pct = (f: number): string => `${(f * 100).toFixed(1)}%`
   const clippedHigh = Math.max(0, ...stats.clipped_high)
   const clippedLow = Math.max(0, ...stats.clipped_low)
-  if (clippedHigh > 0.02) out.push(`${pct(clippedHigh)} of pixels clip to white — detail there is already gone, so a lossy encoder spends nothing on it.`)
+  if (clippedHigh > 0.02)
+    out.push(
+      `${pct(clippedHigh)} of pixels clip to white — detail there is already gone, so a lossy encoder spends nothing on it.`
+    )
   if (clippedLow > 0.05) out.push(`${pct(clippedLow)} of pixels sit at black.`)
-  if (stats.luma_stddev < 0.12) out.push('Low contrast, flat tones: this compresses better than the averages below suggest.')
-  if (stats.luma_stddev > 0.3) out.push('High contrast with fine tonal range: expect savings at the low end of each range.')
+  if (stats.luma_stddev < 0.12)
+    out.push('Low contrast, flat tones: this compresses better than the averages below suggest.')
+  if (stats.luma_stddev > 0.3)
+    out.push('High contrast with fine tonal range: expect savings at the low end of each range.')
   if (stats.channels >= 3) {
     if (stats.mean_saturation < 0.06) {
-      out.push('Almost no colour: a greyscale JPEG (1 channel) or JXL would store the same picture in less space.')
+      out.push(
+        'Almost no colour: a greyscale JPEG (1 channel) or JXL would store the same picture in less space.'
+      )
     }
     const gains = stats.grey_world_gain.filter((g): g is number => g !== null)
     if (gains.length === 3) {
       const [r, , b] = gains
       const cast = b - r
-      if (cast > 0.12) out.push(`Cool cast (blue gain ${b.toFixed(2)}): the scene reads overcast or shaded.`)
-      else if (cast < -0.12) out.push(`Warm cast (red gain ${r.toFixed(2)}): tungsten light or golden hour.`)
+      if (cast > 0.12)
+        out.push(`Cool cast (blue gain ${b.toFixed(2)}): the scene reads overcast or shaded.`)
+      else if (cast < -0.12)
+        out.push(`Warm cast (red gain ${r.toFixed(2)}): tungsten light or golden hour.`)
     }
     if (stats.pixels_measured > 0 && stats.neutral_pixels / stats.pixels_measured > 0.4) {
       out.push('Mostly neutral pixels: chroma subsampling costs nothing visible here.')
     }
   }
-  if (stats.luma_mean < 0.2) out.push('Dark image: keep lossy quality above 60 or shadow noise turns to blocks.')
+  if (stats.luma_mean < 0.2)
+    out.push('Dark image: keep lossy quality above 60 or shadow noise turns to blocks.')
   return out
 }
 
@@ -210,7 +220,9 @@ export function recommend(
           expected: adjust([0.5, 0.7], stats),
           lossless: false,
           why: 'The biggest saving measured: 68% on the reference photo at quality 60. Opens everywhere modern.',
-          caveats: ['The JPEG is already lossy; re-encoding compounds the loss. Check the preview at 100%.']
+          caveats: [
+            'The JPEG is already lossy; re-encoding compounds the loss. Check the preview at 100%.'
+          ]
         }),
         candidate({
           id: 'jpeg-webp',
@@ -230,18 +242,23 @@ export function recommend(
           expected: adjust([0.25, 0.35], stats),
           lossless: false,
           why: 'Butteraugli distance 1 is the threshold of visible difference; 31% smaller on the reference photo.',
-          caveats: ['A second generation of loss, however small. The repack above is free and reversible.']
+          caveats: [
+            'A second generation of loss, however small. The repack above is free and reversible.'
+          ]
         })
       )
       if (suggested && typeof suggested !== 'string' && 'Jpeg' in suggested) {
-        reasons.push(`This JPEG was written at libjpeg quality ${suggested.Jpeg.quality} (${suggested.Jpeg.subsampling} chroma); a same-format re-encode would only lose detail.`)
+        reasons.push(
+          `This JPEG was written at libjpeg quality ${suggested.Jpeg.quality} (${suggested.Jpeg.subsampling} chroma); a same-format re-encode would only lose detail.`
+        )
       }
       if (size < 150 * KB) {
         verdict = 'marginal'
         headline = 'Small JPEG — the saving will be a few kilobytes.'
         reasons.push('Under 150 KB, even a 68% saving is less than one second of video.')
       } else {
-        headline = 'Repack to JPEG XL for a free, reversible 15–20%; go AVIF for the biggest saving.'
+        headline =
+          'Repack to JPEG XL for a free, reversible 15–20%; go AVIF for the biggest saving.'
       }
       break
     }
@@ -257,7 +274,11 @@ export function recommend(
           expected: adjust([0.3, 0.45], stats),
           lossless: true,
           why: 'Every pixel kept; 37% smaller than PNG on the reference 16-bit image. Alpha and 16-bit survive.',
-          caveats: info.png?.has_palette ? ['A palette PNG is stored as truecolour: same pixels, but a tiny palette file can grow.'] : []
+          caveats: info.png?.has_palette
+            ? [
+                'A palette PNG is stored as truecolour: same pixels, but a tiny palette file can grow.'
+              ]
+            : []
         }),
         candidate({
           id: 'png-avif',
@@ -269,7 +290,9 @@ export function recommend(
           why: deep(info)
             ? 'The reference 104 MB 16-bit PNG became 4.9 MB at quality 75 in 10-bit 4:4:4 — a 95% saving.'
             : 'Photographic PNGs are huge for what they show; AVIF at quality 75 keeps the look at a fraction of the size.',
-          caveats: ['Not for screenshots, line art or anything with text: lossy encoders smear sharp edges. Use the lossless option for those.']
+          caveats: [
+            'Not for screenshots, line art or anything with text: lossy encoders smear sharp edges. Use the lossless option for those.'
+          ]
         }),
         candidate({
           id: 'png-jxl',
@@ -297,7 +320,9 @@ export function recommend(
       if (size < 5 * MB) {
         verdict = 'marginal'
         headline = 'A PNG under 5 MB is rarely worth converting.'
-        reasons.push('The engine notes say it plainly: a PNG under 5 MB is not worth converting. Lossless gains are small and a lossy encode changes pixels people chose PNG to keep.')
+        reasons.push(
+          'The engine notes say it plainly: a PNG under 5 MB is not worth converting. Lossless gains are small and a lossy encode changes pixels people chose PNG to keep.'
+        )
       } else {
         headline = deep(info)
           ? 'A 16-bit PNG: JPEG XL lossless keeps everything; AVIF 10-bit saves over 90%.'
@@ -311,7 +336,9 @@ export function recommend(
       if (isAvif) {
         verdict = 'skip'
         headline = 'Already AVIF — one of the most efficient formats there is.'
-        reasons.push('Re-encoding an AVIF only loses detail. JPEG XL lossless would keep the pixels but the file would grow.')
+        reasons.push(
+          'Re-encoding an AVIF only loses detail. JPEG XL lossless would keep the pixels but the file would grow.'
+        )
         candidates.push(
           candidate({
             id: 'avif-jxl-lossless',
@@ -325,7 +352,9 @@ export function recommend(
         )
       } else {
         headline = 'HEIC: AVIF is smaller at the same look, but the quality has to be guessed.'
-        reasons.push('A HEIC never records the quality it was encoded at, so no same-format re-encode exists; the engine refuses to guess and so does this app — quality 70 is a starting point, check the preview.')
+        reasons.push(
+          'A HEIC never records the quality it was encoded at, so no same-format re-encode exists; the engine refuses to guess and so does this app — quality 70 is a starting point, check the preview.'
+        )
         candidates.push(
           candidate({
             id: 'heic-avif',
@@ -356,7 +385,9 @@ export function recommend(
       verdict = 'skip'
       headline = 'Already JPEG XL — nothing to gain.'
       if (info.jxl?.has_jpeg_reconstruction) {
-        reasons.push('This file carries JPEG reconstruction data: the original JPEG can be restored byte for byte, which is not a saving but is sometimes what you need.')
+        reasons.push(
+          'This file carries JPEG reconstruction data: the original JPEG can be restored byte for byte, which is not a saving but is sometimes what you need.'
+        )
         candidates.push(
           candidate({
             id: 'jxl-restore',
@@ -370,7 +401,9 @@ export function recommend(
           })
         )
       } else {
-        reasons.push('JPEG XL is the most efficient format this engine writes; re-encoding it can only lose detail.')
+        reasons.push(
+          'JPEG XL is the most efficient format this engine writes; re-encoding it can only lose detail.'
+        )
       }
       break
     }
@@ -397,7 +430,9 @@ export function recommend(
       } else {
         verdict = 'marginal'
         headline = 'Lossy WebP is already compact; AVIF might shave a little more.'
-        reasons.push('A lossy WebP does not record its quality, so the AVIF quality below is a guess.')
+        reasons.push(
+          'A lossy WebP does not record its quality, so the AVIF quality below is a guess.'
+        )
         candidates.push(
           candidate({
             id: 'webp-avif',
@@ -453,8 +488,11 @@ export function recommend(
     }
 
     case 'Raw': {
-      headline = 'RAW: DNG keeps the sensor data losslessly; developing it gives a photo at a tenth of the size.'
-      reasons.push('A RAW file is not an image but a grid of sensor readings. Turning it into pixels is a rendering, and one this app makes only when told which.')
+      headline =
+        'RAW: DNG keeps the sensor data losslessly; developing it gives a photo at a tenth of the size.'
+      reasons.push(
+        'A RAW file is not an image but a grid of sensor readings. Turning it into pixels is a rendering, and one this app makes only when told which.'
+      )
       candidates.push(
         candidate({
           id: 'raw-dng',
@@ -466,7 +504,9 @@ export function recommend(
           expected: [0.1, 0.16],
           lossless: true,
           why: 'The reference CR2 became a DNG 14% smaller in half a second, mosaic preserved bit for bit, camera metadata written by rawler.',
-          caveats: ['The vendor RAW file itself is not embedded unless you turn that on in the dials (which makes the DNG larger than the original).']
+          caveats: [
+            'The vendor RAW file itself is not embedded unless you turn that on in the dials (which makes the DNG larger than the original).'
+          ]
         }),
         candidate({
           id: 'raw-jpeg',
@@ -539,7 +579,8 @@ function leadCandidate(info: SourceInfo, candidates: Candidate[]): string | null
   if (ids.has('jpeg-repack')) return 'jpeg-repack'
   if (ids.has('raw-dng')) return 'raw-dng'
   if (info.input === 'Png' && info.bytes < 5 * MB) return 'png-jxl-lossless'
-  if (ids.has('png-jxl-lossless') && (hasAlpha(info) || info.png?.has_palette)) return 'png-jxl-lossless'
+  if (ids.has('png-jxl-lossless') && (hasAlpha(info) || info.png?.has_palette))
+    return 'png-jxl-lossless'
   if (ids.has('tiff-jxl-lossless')) return 'tiff-jxl-lossless'
   if (ids.has('png-avif')) return 'png-avif'
   if (ids.has('heic-avif')) return 'heic-avif'

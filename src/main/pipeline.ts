@@ -12,9 +12,25 @@ import { mkdtempSync, rmSync, existsSync, statSync } from 'fs'
 import { tmpdir } from 'os'
 import { basename, dirname, join } from 'path'
 import log from 'electron-log/main'
-import type { AnalyzeRequest, ConvertReport, ConvertRequest, Encode, InputFormat, RawMode, SourceInfo } from '../shared/engine-types'
+import type {
+  AnalyzeRequest,
+  ConvertReport,
+  ConvertRequest,
+  Encode,
+  InputFormat,
+  RawMode,
+  SourceInfo
+} from '../shared/engine-types'
 import type { AppError, Conversion, Inspection, Preview, RenderedImage } from '../shared/ipc'
-import { buildConvertRequest, describePlan, outputFileName, planIsLossless, planIsReversible, TARGETS, type Plan } from '../shared/plan'
+import {
+  buildConvertRequest,
+  describePlan,
+  outputFileName,
+  planIsLossless,
+  planIsReversible,
+  TARGETS,
+  type Plan
+} from '../shared/plan'
 import { recommend } from '../shared/recommend'
 import { EngineClient, EngineError } from './engine/client'
 import type { Store } from './db'
@@ -23,7 +39,8 @@ import type { Store } from './db'
 const PREVIEW_EDGE = 1600
 
 export function toAppError(err: unknown): AppError {
-  if (err instanceof EngineError) return { message: err.message, code: err.code, detail: err.detail }
+  if (err instanceof EngineError)
+    return { message: err.message, code: err.code, detail: err.detail }
   if (err instanceof Error) return { message: err.message, code: 'Unknown' }
   return { message: String(err), code: 'Unknown' }
 }
@@ -31,13 +48,24 @@ export function toAppError(err: unknown): AppError {
 function sniffMime(bytes: Uint8Array): string {
   if (bytes.length > 8 && bytes[0] === 0x89 && bytes[1] === 0x50) return 'image/png'
   if (bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8) return 'image/jpeg'
-  if (bytes.length > 12 && String.fromCharCode(...bytes.subarray(8, 12)) === 'WEBP') return 'image/webp'
-  if (bytes.length > 12 && String.fromCharCode(...bytes.subarray(4, 8)) === 'ftyp') return 'image/avif'
+  if (bytes.length > 12 && String.fromCharCode(...bytes.subarray(8, 12)) === 'WEBP')
+    return 'image/webp'
+  if (bytes.length > 12 && String.fromCharCode(...bytes.subarray(4, 8)) === 'ftyp')
+    return 'image/avif'
   return 'application/octet-stream'
 }
 
 /** The RAW mode a render uses when it has to decode a mosaic and the user has not said how. */
-const RENDER_RAW: RawMode = { Develop: { scaling: true, demosaic: true, white_balance: true, calibrate: true, srgb_gamma: true, crop: 'Best' } }
+const RENDER_RAW: RawMode = {
+  Develop: {
+    scaling: true,
+    demosaic: true,
+    white_balance: true,
+    calibrate: true,
+    srgb_gamma: true,
+    crop: 'Best'
+  }
+}
 
 export class Pipeline {
   private infoCache = new Map<string, SourceInfo>()
@@ -109,7 +137,11 @@ export class Pipeline {
       let after: RenderedImage | null = null
       let afterError: AppError | null = null
       try {
-        after = await this.render(out, target.decodesAs, target.decodesAs === 'Raw' ? RENDER_RAW : null)
+        after = await this.render(
+          out,
+          target.decodesAs,
+          target.decodesAs === 'Raw' ? RENDER_RAW : null
+        )
       } catch (err) {
         afterError = toAppError(err)
       }
@@ -146,20 +178,53 @@ export class Pipeline {
     const t0 = Date.now()
     let report: ConvertReport
     try {
-      report = await this.engine.convert(buildConvertRequest(plan, info, path, { Path: outputPath }))
+      report = await this.engine.convert(
+        buildConvertRequest(plan, info, path, { Path: outputPath })
+      )
     } catch (err) {
       const e = toAppError(err)
-      this.store.finishConversion(id, { outputPath: null, outputBytes: null, durationMs: Date.now() - t0, status: 'error', error: `${e.code}: ${e.message}` })
+      this.store.finishConversion(id, {
+        outputPath: null,
+        outputBytes: null,
+        durationMs: Date.now() - t0,
+        status: 'error',
+        error: `${e.code}: ${e.message}`
+      })
       // A failed encode must not leave a half-written file beside the original.
       if (existsSync(outputPath)) rmSync(outputPath, { force: true })
       throw err
     }
     const ms = Date.now() - t0
     // The native engine's report is the file's size; the placeholder's is an estimate, and its copy on disk is not.
-    const outputBytes = flavour === 'native' && existsSync(outputPath) ? statSync(outputPath).size : report.output_bytes
-    this.store.finishConversion(id, { outputPath, outputBytes, durationMs: ms, status: 'ok', error: null })
-    log.info('converted', { path, outputPath, in: info.bytes, out: outputBytes, ms, engine: flavour })
-    return { id, outputPath, report, inputBytes: info.bytes, outputBytes, savedBytes: info.bytes - outputBytes, ms, engine: flavour }
+    const outputBytes =
+      flavour === 'native' && existsSync(outputPath)
+        ? statSync(outputPath).size
+        : report.output_bytes
+    this.store.finishConversion(id, {
+      outputPath,
+      outputBytes,
+      durationMs: ms,
+      status: 'ok',
+      error: null
+    })
+    log.info('converted', {
+      path,
+      outputPath,
+      in: info.bytes,
+      out: outputBytes,
+      ms,
+      engine: flavour
+    })
+    return {
+      id,
+      outputPath,
+      report,
+      inputBytes: info.bytes,
+      outputBytes,
+      savedBytes: info.bytes - outputBytes,
+      ms,
+      engine: flavour
+    }
   }
 
   private async info(path: string): Promise<SourceInfo> {
@@ -171,7 +236,11 @@ export class Pipeline {
   }
 
   /** Decode any file the engine reads into a fit-to-screen 8-bit PNG, colour description carried along. */
-  private async render(path: string, input: InputFormat, raw: RawMode | null): Promise<RenderedImage> {
+  private async render(
+    path: string,
+    input: InputFormat,
+    raw: RawMode | null
+  ): Promise<RenderedImage> {
     const request: ConvertRequest = {
       source: { Path: path },
       sink: 'Bytes',
@@ -193,7 +262,12 @@ export class Pipeline {
     const longer = Math.max(probe.width, probe.height)
     if (longer > PREVIEW_EDGE) {
       const s = PREVIEW_EDGE / longer
-      request.resize = { Exact: { width: Math.max(1, Math.round(probe.width * s)), height: Math.max(1, Math.round(probe.height * s)) } }
+      request.resize = {
+        Exact: {
+          width: Math.max(1, Math.round(probe.width * s)),
+          height: Math.max(1, Math.round(probe.height * s))
+        }
+      }
     }
     const report = await this.engine.convert(request)
     const bytes = new Uint8Array(report.output ?? [])

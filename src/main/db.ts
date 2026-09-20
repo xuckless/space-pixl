@@ -10,7 +10,13 @@ import { DatabaseSync } from 'node:sqlite'
 import { mkdirSync } from 'fs'
 import { dirname } from 'path'
 import type { EngineFlavour } from '../shared/engine-types'
-import type { ConversionRow, DailyPoint, StatsSummary, StatsWindow, TargetBreakdown } from '../shared/ipc'
+import type {
+  ConversionRow,
+  DailyPoint,
+  StatsSummary,
+  StatsWindow,
+  TargetBreakdown
+} from '../shared/ipc'
 import type { TargetFormat } from '../shared/plan'
 
 const SCHEMA = `
@@ -110,7 +116,15 @@ export function localDay(d: Date): string {
 }
 
 function emptyWindow(): StatsWindow {
-  return { converted: 0, failed: 0, inputBytes: 0, outputBytes: 0, savedBytes: 0, engineMs: 0, analysed: 0 }
+  return {
+    converted: 0,
+    failed: 0,
+    inputBytes: 0,
+    outputBytes: 0,
+    savedBytes: 0,
+    engineMs: 0,
+    analysed: 0
+  }
 }
 
 function accumulate(w: StatsWindow, r: ConversionRow): void {
@@ -140,7 +154,13 @@ export class Store {
     this.db.close()
   }
 
-  recordInspection(path: string, format: string, bytes: number, engine: EngineFlavour, at = new Date()): void {
+  recordInspection(
+    path: string,
+    format: string,
+    bytes: number,
+    engine: EngineFlavour,
+    at = new Date()
+  ): void {
     this.db
       .prepare('INSERT INTO inspections (at, path, format, bytes, engine) VALUES (?, ?, ?, ?, ?)')
       .run(at.toISOString(), path, format, bytes, engine)
@@ -152,32 +172,59 @@ export class Store {
         `INSERT INTO conversions (started_at, source_path, input_format, target, description, input_bytes, lossless, reversible, status, engine)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'running', ?)`
       )
-      .run(at.toISOString(), c.sourcePath, c.inputFormat, c.target, c.description, c.inputBytes, c.lossless ? 1 : 0, c.reversible ? 1 : 0, c.engine)
+      .run(
+        at.toISOString(),
+        c.sourcePath,
+        c.inputFormat,
+        c.target,
+        c.description,
+        c.inputBytes,
+        c.lossless ? 1 : 0,
+        c.reversible ? 1 : 0,
+        c.engine
+      )
     return Number(result.lastInsertRowid)
   }
 
   finishConversion(id: number, f: FinishConversion): void {
     this.db
-      .prepare('UPDATE conversions SET output_path = ?, output_bytes = ?, duration_ms = ?, status = ?, error = ? WHERE id = ?')
+      .prepare(
+        'UPDATE conversions SET output_path = ?, output_bytes = ?, duration_ms = ?, status = ?, error = ? WHERE id = ?'
+      )
       .run(f.outputPath, f.outputBytes, f.durationMs, f.status, f.error, id)
   }
 
   /** Anything left 'running' by a crash is an error, not a pending job. */
   reconcile(): void {
-    this.db.prepare("UPDATE conversions SET status = 'error', error = 'interrupted' WHERE status = 'running'").run()
+    this.db
+      .prepare(
+        "UPDATE conversions SET status = 'error', error = 'interrupted' WHERE status = 'running'"
+      )
+      .run()
   }
 
   get(id: number): ConversionRow | null {
-    const r = this.db.prepare('SELECT * FROM conversions WHERE id = ?').get(id) as RawRow | undefined
+    const r = this.db.prepare('SELECT * FROM conversions WHERE id = ?').get(id) as
+      RawRow | undefined
     return r ? toRow(r) : null
   }
 
   recent(limit = 20): ConversionRow[] {
-    return (this.db.prepare("SELECT * FROM conversions WHERE status != 'running' ORDER BY started_at DESC, id DESC LIMIT ?").all(limit) as unknown as RawRow[]).map(toRow)
+    return (
+      this.db
+        .prepare(
+          "SELECT * FROM conversions WHERE status != 'running' ORDER BY started_at DESC, id DESC LIMIT ?"
+        )
+        .all(limit) as unknown as RawRow[]
+    ).map(toRow)
   }
 
   summary(now = new Date(), days = 30): StatsSummary {
-    const all = (this.db.prepare("SELECT * FROM conversions WHERE status != 'running' ORDER BY started_at ASC").all() as unknown as RawRow[]).map(toRow)
+    const all = (
+      this.db
+        .prepare("SELECT * FROM conversions WHERE status != 'running' ORDER BY started_at ASC")
+        .all() as unknown as RawRow[]
+    ).map(toRow)
     const lifetime = emptyWindow()
     const month = emptyWindow()
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -208,7 +255,13 @@ export class Store {
         point.savedBytes += saved
         point.files++
       }
-      const t = byTarget.get(r.target) ?? { target: r.target, files: 0, inputBytes: 0, outputBytes: 0, savedBytes: 0 }
+      const t = byTarget.get(r.target) ?? {
+        target: r.target,
+        files: 0,
+        inputBytes: 0,
+        outputBytes: 0,
+        savedBytes: 0
+      }
       t.files++
       t.inputBytes += r.inputBytes
       t.outputBytes += r.outputBytes
@@ -216,13 +269,19 @@ export class Store {
       byTarget.set(r.target, t)
     }
 
-    const inspections = this.db.prepare('SELECT COUNT(*) AS n FROM inspections').get() as { n: number }
-    const monthInspections = this.db.prepare('SELECT COUNT(*) AS n FROM inspections WHERE at >= ?').get(monthStart.toISOString()) as { n: number }
+    const inspections = this.db.prepare('SELECT COUNT(*) AS n FROM inspections').get() as {
+      n: number
+    }
+    const monthInspections = this.db
+      .prepare('SELECT COUNT(*) AS n FROM inspections WHERE at >= ?')
+      .get(monthStart.toISOString()) as { n: number }
     lifetime.analysed = Number(inspections.n)
     month.analysed = Number(monthInspections.n)
 
     const ok = all.filter((r) => r.status === 'ok' && r.outputBytes !== null)
-    const biggest = [...ok].sort((a, b) => b.inputBytes - (b.outputBytes ?? 0) - (a.inputBytes - (a.outputBytes ?? 0))).slice(0, 5)
+    const biggest = [...ok]
+      .sort((a, b) => b.inputBytes - (b.outputBytes ?? 0) - (a.inputBytes - (a.outputBytes ?? 0)))
+      .slice(0, 5)
 
     return {
       lifetime,

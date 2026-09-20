@@ -49,7 +49,18 @@ function invalid(field: string, detail: string): MockPixlError {
   })
 }
 
-const RAW_EXTENSIONS = new Set(['cr2', 'cr3', 'arw', 'nef', 'dng', 'raf', 'rw2', 'orf', 'pef', 'srw'])
+const RAW_EXTENSIONS = new Set([
+  'cr2',
+  'cr3',
+  'arw',
+  'nef',
+  'dng',
+  'raf',
+  'rw2',
+  'orf',
+  'pef',
+  'srw'
+])
 
 function readHead(path: string, n = 256 * 1024): Buffer {
   const fd = openSync(path, 'r')
@@ -95,11 +106,22 @@ function detect(path: string, head: Buffer): Detected {
         continue
       }
       const len = head.readUInt16BE(i + 2)
-      if ((marker >= 0xc0 && marker <= 0xc3) || (marker >= 0xc5 && marker <= 0xc7) || (marker >= 0xc9 && marker <= 0xcb)) {
+      if (
+        (marker >= 0xc0 && marker <= 0xc3) ||
+        (marker >= 0xc5 && marker <= 0xc7) ||
+        (marker >= 0xc9 && marker <= 0xcb)
+      ) {
         const height = head.readUInt16BE(i + 5)
         const width = head.readUInt16BE(i + 7)
         const comps = head[i + 9]
-        return { format: 'jpeg', input: 'Jpeg', width, height, channels: comps === 1 ? 1 : 3, bits: 8 }
+        return {
+          format: 'jpeg',
+          input: 'Jpeg',
+          width,
+          height,
+          channels: comps === 1 ? 1 : 3,
+          bits: 8
+        }
       }
       i += 2 + len
     }
@@ -113,7 +135,11 @@ function detect(path: string, head: Buffer): Detected {
     const channels = { 0: 1, 2: 3, 3: 3, 4: 2, 6: 4 }[colorType] ?? 3
     return { format: 'png', input: 'Png', width, height, channels, bits: bitDepth }
   }
-  if (head.length >= 30 && head.toString('latin1', 0, 4) === 'RIFF' && head.toString('latin1', 8, 12) === 'WEBP') {
+  if (
+    head.length >= 30 &&
+    head.toString('latin1', 0, 4) === 'RIFF' &&
+    head.toString('latin1', 8, 12) === 'WEBP'
+  ) {
     const chunk = head.toString('latin1', 12, 16)
     if (chunk === 'VP8X') {
       const width = 1 + (head[24] | (head[25] << 8) | (head[26] << 16))
@@ -141,10 +167,12 @@ function detect(path: string, head: Buffer): Detected {
     return guess('heic', 'Heif', 3, 8)
   }
   if (head.length >= 2 && head[0] === 0xff && head[1] === 0x0a) return guess('jxl', 'Jxl')
-  if (head.length >= 12 && head.toString('latin1', 4, 12) === 'JXL \r\n\x87\n') return guess('jxl', 'Jxl')
+  if (head.length >= 12 && head.toString('latin1', 4, 12) === 'JXL \r\n\x87\n')
+    return guess('jxl', 'Jxl')
   if (
     head.length >= 4 &&
-    ((head[0] === 0x49 && head[1] === 0x49 && head[2] === 0x2a) || (head[0] === 0x4d && head[1] === 0x4d && head[3] === 0x2a))
+    ((head[0] === 0x49 && head[1] === 0x49 && head[2] === 0x2a) ||
+      (head[0] === 0x4d && head[1] === 0x4d && head[3] === 0x2a))
   ) {
     if (RAW_EXTENSIONS.has(ext) || head.toString('latin1', 8, 10) === 'CR') {
       return { ...guess(ext || 'raw', 'Raw', 1, 14), width: 6000, height: 4000 }
@@ -232,7 +260,12 @@ function ratioFor(input: InputFormat, encode: Encode, deep: boolean): number {
   const table: Partial<Record<InputFormat, Partial<Record<string, () => number>>>> = {
     Jpeg: {
       JxlJpegRepack: () => 0.81,
-      JxlLossy: () => 0.69 * Math.pow(1 / Math.max(0.2, (encode as { JxlLossy: { distance: number } }).JxlLossy.distance), 0.55),
+      JxlLossy: () =>
+        0.69 *
+        Math.pow(
+          1 / Math.max(0.2, (encode as { JxlLossy: { distance: number } }).JxlLossy.distance),
+          0.55
+        ),
       JxlLossless: () => 2.85,
       Avif: () => 0.32 * q((encode as { Avif: { quality: number } }).Avif.quality, 60),
       WebP: () => 0.41 * q((encode as { WebP: { quality: number } }).WebP.quality, 80),
@@ -243,7 +276,8 @@ function ratioFor(input: InputFormat, encode: Encode, deep: boolean): number {
     Png: {
       JxlLossless: () => 0.63,
       JxlLossy: () => 0.15,
-      Avif: () => (deep ? 0.05 : 0.12) * q((encode as { Avif: { quality: number } }).Avif.quality, 75),
+      Avif: () =>
+        (deep ? 0.05 : 0.12) * q((encode as { Avif: { quality: number } }).Avif.quality, 75),
       WebP: () => ((encode as { WebP: { lossless: boolean } }).WebP.lossless ? 0.75 : 0.15),
       Jpeg: () => 0.12,
       Png: () => 0.98,
@@ -302,31 +336,54 @@ function ratioFor(input: InputFormat, encode: Encode, deep: boolean): number {
 
 function validateLikeTheEngine(req: ConvertRequest): void {
   const v = encodeVariant(req.encode)
-  const requires: Partial<Record<string, InputFormat>> = { JxlJpegRepack: 'Jpeg', JpegFromJxl: 'Jxl', Dng: 'Raw' }
+  const requires: Partial<Record<string, InputFormat>> = {
+    JxlJpegRepack: 'Jpeg',
+    JpegFromJxl: 'Jxl',
+    Dng: 'Raw'
+  }
   const need = requires[v]
   if (need && req.input !== need) {
-    throw unsupported('input format for encoder', `${v} requires a ${need.toLowerCase()} source, got ${req.input.toLowerCase()}`)
+    throw unsupported(
+      'input format for encoder',
+      `${v} requires a ${need.toLowerCase()} source, got ${req.input.toLowerCase()}`
+    )
   }
   if (v === 'Heic') {
-    throw new MockPixlError('EncoderUnavailable', 'encoder `heic` unavailable: libheif was built without an HEVC encoder (x265 is excluded from shipped builds)', {
-      EncoderUnavailable: { encoder: 'heic', detail: 'no HEVC encoder in this build' }
-    })
+    throw new MockPixlError(
+      'EncoderUnavailable',
+      'encoder `heic` unavailable: libheif was built without an HEVC encoder (x265 is excluded from shipped builds)',
+      {
+        EncoderUnavailable: { encoder: 'heic', detail: 'no HEVC encoder in this build' }
+      }
+    )
   }
   if (req.input === 'Raw' && v !== 'Dng' && req.raw === null) {
-    throw invalid('raw', `a RAW source cannot become ${v.toLowerCase()} without a raw mode — set RawMode::Develop or RawMode::EmbeddedPreview`)
+    throw invalid(
+      'raw',
+      `a RAW source cannot become ${v.toLowerCase()} without a raw mode — set RawMode::Develop or RawMode::EmbeddedPreview`
+    )
   }
   if (req.input !== 'Raw' && req.raw !== null) {
-    throw invalid('raw', `a raw mode only applies to a RAW source, but input is ${req.input.toLowerCase()}`)
+    throw invalid(
+      'raw',
+      `a raw mode only applies to a RAW source, but input is ${req.input.toLowerCase()}`
+    )
   }
   const passthrough = v === 'JxlJpegRepack' || v === 'JpegFromJxl' || v === 'Dng'
   if (passthrough && (req.resize !== 'None' || req.color !== 'Preserve' || req.dither !== 'None')) {
-    throw unsupported('pixel work on a bitstream copy', `${v} copies a bitstream and never decodes pixels`)
+    throw unsupported(
+      'pixel work on a bitstream copy',
+      `${v} copies a bitstream and never decodes pixels`
+    )
   }
   if (v === 'WebP' && req.pixel.depth === 'Sixteen') {
     throw unsupported('depth for encoder', 'webp takes [Eight], but pixel.depth asks for Sixteen')
   }
   if (v === 'Jpeg' && (req.pixel.channels === 4 || req.pixel.channels === 2)) {
-    throw unsupported('channel count for encoder', `jpeg takes [1, 3] channels, but pixel.channels asks for ${req.pixel.channels}`)
+    throw unsupported(
+      'channel count for encoder',
+      `jpeg takes [1, 3] channels, but pixel.channels asks for ${req.pixel.channels}`
+    )
   }
 }
 
@@ -337,9 +394,14 @@ function sourceBytes(req: ConvertRequest | AnalyzeRequest): { path: string | nul
   return { path: null, bytes: req.source.Bytes.length }
 }
 
-function outputGeometry(req: ConvertRequest, w: number, h: number): { width: number; height: number } {
+function outputGeometry(
+  req: ConvertRequest,
+  w: number,
+  h: number
+): { width: number; height: number } {
   if (req.resize === 'None') return { width: w, height: h }
-  if ('Exact' in req.resize) return { width: req.resize.Exact.width, height: req.resize.Exact.height }
+  if ('Exact' in req.resize)
+    return { width: req.resize.Exact.width, height: req.resize.Exact.height }
   const f = req.resize.Scale.factor
   return { width: Math.max(1, Math.round(w * f)), height: Math.max(1, Math.round(h * f)) }
 }
@@ -389,21 +451,43 @@ export function createMockEngine(): PixlEngineModule {
                 components: d.channels
               }
             : null,
-        heif: d.input === 'Heif' ? { codec: d.format === 'avif' ? 'Av1' : 'Hevc', chroma: 'Half', bit_depth: d.format === 'avif' ? 10 : 8 } : null,
+        heif:
+          d.input === 'Heif'
+            ? {
+                codec: d.format === 'avif' ? 'Av1' : 'Hevc',
+                chroma: 'Half',
+                bit_depth: d.format === 'avif' ? 10 : 8
+              }
+            : null,
         png:
           d.input === 'Png'
-            ? { bit_depth: d.bits, color_type: d.channels === 4 ? 'Rgba' : d.channels === 1 ? 'Grayscale' : 'Rgb', interlaced: false, has_palette: false }
+            ? {
+                bit_depth: d.bits,
+                color_type: d.channels === 4 ? 'Rgba' : d.channels === 1 ? 'Grayscale' : 'Rgb',
+                interlaced: false,
+                has_palette: false
+              }
             : null,
-        webp: d.input === 'WebP' ? { lossless: false, has_alpha: d.channels === 4, animated: false } : null,
-        jxl: d.input === 'Jxl' ? { has_jpeg_reconstruction: true, uses_original_profile: false, lossless: null } : null,
-        tiff: d.input === 'Tiff' ? { compression: 'Lzw', compression_tag: 5, predictor: 2, planar: false } : null
+        webp:
+          d.input === 'WebP'
+            ? { lossless: false, has_alpha: d.channels === 4, animated: false }
+            : null,
+        jxl:
+          d.input === 'Jxl'
+            ? { has_jpeg_reconstruction: true, uses_original_profile: false, lossless: null }
+            : null,
+        tiff:
+          d.input === 'Tiff'
+            ? { compression: 'Lzw', compression_tag: 5, predictor: 2, planar: false }
+            : null
       }
     },
 
     async analyze(req: AnalyzeRequest): Promise<ImageStats> {
       const { path, bytes } = sourceBytes(req)
       const info = path ? await this.probe(path) : null
-      if (req.input === 'Raw' && req.raw === null) throw invalid('raw', 'a RAW source needs a raw mode to become pixels')
+      if (req.input === 'Raw' && req.raw === null)
+        throw invalid('raw', 'a RAW source needs a raw mode to become pixels')
       const seed = hashString(path ?? String(bytes))
       const r = rng(seed)
       const channels = info?.channels ?? 3
@@ -411,7 +495,8 @@ export function createMockEngine(): PixlEngineModule {
       const bins = req.bins
       const mean = 0.3 + r() * 0.35
       const spread = 0.12 + r() * 0.2
-      const gauss = (x: number, m: number, s: number): number => Math.exp(-((x - m) * (x - m)) / (2 * s * s))
+      const gauss = (x: number, m: number, s: number): number =>
+        Math.exp(-((x - m) * (x - m)) / (2 * s * s))
       const luma = Array.from({ length: bins }, (_, i) => {
         const x = (i + 0.5) / bins
         const v = gauss(x, mean, spread) + 0.35 * gauss(x, Math.min(0.95, mean + 0.4), 0.06) + 0.02
@@ -428,7 +513,10 @@ export function createMockEngine(): PixlEngineModule {
       })
       const casts = [1 + (r() - 0.5) * 0.2, 1, 1 + (r() - 0.5) * 0.3]
       const channelMean = colour === 1 ? [mean] : casts.map((c) => Math.min(0.98, mean / c))
-      const lumaMean = colour === 1 ? mean : 0.2126 * channelMean[0] + 0.7152 * channelMean[1] + 0.0722 * channelMean[2]
+      const lumaMean =
+        colour === 1
+          ? mean
+          : 0.2126 * channelMean[0] + 0.7152 * channelMean[1] + 0.0722 * channelMean[2]
       const w = info?.width ?? 4000
       const h = info?.height ?? 3000
       const measured = Math.floor(w / req.stride) * Math.floor(h / req.stride)
@@ -442,7 +530,9 @@ export function createMockEngine(): PixlEngineModule {
         space: req.domain === 'Linear' ? 'linear Rec.2020' : `${info?.color ?? 'sRGB'} (encoded)`,
         pixels_measured: measured,
         histograms: channelMean.map((m) => ({
-          counts: Array.from({ length: bins }, (_, i) => Math.round((gauss((i + 0.5) / bins, m, spread) + 0.02) * 100_000))
+          counts: Array.from({ length: bins }, (_, i) =>
+            Math.round((gauss((i + 0.5) / bins, m, spread) + 0.02) * 100_000)
+          )
         })),
         luma_histogram: { counts: luma },
         luma_percentiles: percentiles,
@@ -468,7 +558,10 @@ export function createMockEngine(): PixlEngineModule {
     suggestEncode(info: SourceInfo, threads: number): Encode {
       if (threads < 1) throw invalid('threads', 'must be at least 1')
       if (info.is_raw_mosaic || info.input === 'Raw') {
-        throw unsupported('suggest_encode', 'a RAW source has no same-format encoder: nothing outputs RAW. Encode::Dng is the lossless container for a sensor mosaic')
+        throw unsupported(
+          'suggest_encode',
+          'a RAW source has no same-format encoder: nothing outputs RAW. Encode::Dng is the lossless container for a sensor mosaic'
+        )
       }
       switch (info.input) {
         case 'Jpeg': {
@@ -487,10 +580,16 @@ export function createMockEngine(): PixlEngineModule {
           return { Tiff: { compression: info.tiff?.compression ?? 'Deflate' } }
         case 'WebP':
           if (info.webp?.lossless) return { WebP: { quality: 100, lossless: true, method: 6 } }
-          throw unsupported('suggest_encode', 'a lossy WebP does not record its quality; set encode.quality yourself in Encode::WebP { quality: <yours>, lossless: false, method: 6 }')
+          throw unsupported(
+            'suggest_encode',
+            'a lossy WebP does not record its quality; set encode.quality yourself in Encode::WebP { quality: <yours>, lossless: false, method: 6 }'
+          )
         case 'Jxl':
           if (info.jxl?.lossless) return { JxlLossless: { effort: 9, threads } }
-          throw unsupported('suggest_encode', 'a lossy JPEG XL does not record its distance; set encode.distance yourself in Encode::JxlLossy { distance: <yours>, effort: 7, threads }')
+          throw unsupported(
+            'suggest_encode',
+            'a lossy JPEG XL does not record its distance; set encode.distance yourself in Encode::JxlLossy { distance: <yours>, effort: 7, threads }'
+          )
         case 'Heif': {
           const h = info.heif
           const codec = h?.codec === 'Av1' ? 'Avif' : 'Heic'
@@ -530,11 +629,19 @@ export function createMockEngine(): PixlEngineModule {
       } else if (path) {
         copyFileSync(path, req.sink.Path)
       } else {
-        throw unsupported('mock convert', 'the placeholder engine needs a Path source to write a Path sink')
+        throw unsupported(
+          'mock convert',
+          'the placeholder engine needs a Path source to write a Path sink'
+        )
       }
 
-      const lossy = v === 'Jpeg' || v === 'Avif' || v === 'WebP' || (v === 'JxlLossy' && (req.encode as { JxlLossy: { distance: number } }).JxlLossy.distance > 0)
-      const ms = Math.round(bytes / (passthrough ? 25_000_000 : 3_000_000) * 1000)
+      const lossy =
+        v === 'Jpeg' ||
+        v === 'Avif' ||
+        v === 'WebP' ||
+        (v === 'JxlLossy' &&
+          (req.encode as { JxlLossy: { distance: number } }).JxlLossy.distance > 0)
+      const ms = Math.round((bytes / (passthrough ? 25_000_000 : 3_000_000)) * 1000)
       return {
         input_bytes: bytes,
         output_bytes: outputBytes,
@@ -547,13 +654,23 @@ export function createMockEngine(): PixlEngineModule {
         color_ms: req.color === 'Preserve' ? 0 : Math.round(ms * 0.1),
         encode_ms: Math.max(1, Math.round(ms * 0.6)),
         output,
-        metadata_written: v === 'Dng' ? { exif: true, icc: false, xmp: false, iptc: false } : { ...req.metadata, iptc: req.metadata.iptc && (v === 'Jpeg' || v === 'Tiff' || v === 'Avif' || v === 'Heic') },
+        metadata_written:
+          v === 'Dng'
+            ? { exif: true, icc: false, xmp: false, iptc: false }
+            : {
+                ...req.metadata,
+                iptc:
+                  req.metadata.iptc &&
+                  (v === 'Jpeg' || v === 'Tiff' || v === 'Avif' || v === 'Heic')
+              },
         color: {
           space: info?.color ?? 'sRGB',
           source: info?.color_source ?? 'Assumed',
-          converted: typeof req.color !== 'string' && ('ConvertTo' in req.color || 'ToneMap' in req.color),
+          converted:
+            typeof req.color !== 'string' && ('ConvertTo' in req.color || 'ToneMap' in req.color),
           icc_written: req.metadata.icc,
-          cicp_written: v === 'Avif' || v === 'Heic' || v === 'JxlLossy' || v === 'JxlLossless' || v === 'Png',
+          cicp_written:
+            v === 'Avif' || v === 'Heic' || v === 'JxlLossy' || v === 'JxlLossless' || v === 'Png',
           tone_mapped: null,
           graded: null
         },
@@ -565,12 +682,18 @@ export function createMockEngine(): PixlEngineModule {
           dither: req.dither,
           single_float_pass: !passthrough,
           resampled: req.resize !== 'None',
-          channels_changed: req.pixel.channels !== null && req.pixel.channels !== (info?.channels ?? 3),
+          channels_changed:
+            req.pixel.channels !== null && req.pixel.channels !== (info?.channels ?? 3),
           depth_narrowed: deep && req.pixel.depth === 'Eight',
           colour_transformed: typeof req.color !== 'string',
           graded: false,
           lossy_encoder: lossy,
-          chroma_subsampled: v === 'Jpeg' || v === 'WebP' || ((v === 'Avif' || v === 'Heic') && (req.encode as { Avif?: { chroma: string }; Heic?: { chroma: string } })[v]?.chroma !== 'Full')
+          chroma_subsampled:
+            v === 'Jpeg' ||
+            v === 'WebP' ||
+            ((v === 'Avif' || v === 'Heic') &&
+              (req.encode as { Avif?: { chroma: string }; Heic?: { chroma: string } })[v]
+                ?.chroma !== 'Full')
         }
       }
     }

@@ -21,7 +21,8 @@ const api = {
     getState: (): Promise<UpdateState> => ipcRenderer.invoke(IPC.updates.getState),
     check: (): Promise<UpdateState> => ipcRenderer.invoke(IPC.updates.check),
     install: (): Promise<void> => ipcRenderer.invoke(IPC.updates.install),
-    setChannel: (channel: UpdateChannel): Promise<UpdateState> => ipcRenderer.invoke(IPC.updates.setChannel, channel),
+    setChannel: (channel: UpdateChannel): Promise<UpdateState> =>
+      ipcRenderer.invoke(IPC.updates.setChannel, channel),
     /** Subscribe to state changes. Returns an unsubscribe function. */
     onEvent: (cb: (state: UpdateState) => void): (() => void) => {
       const listener = (_e: IpcRendererEvent, state: UpdateState): void => cb(state)
@@ -36,8 +37,10 @@ const api = {
   engine: {
     status: (): Promise<EngineStatus> => ipcRenderer.invoke(IPC.engine.status),
     inspect: (path: string): Promise<InspectResult> => ipcRenderer.invoke(IPC.engine.inspect, path),
-    preview: (path: string, plan: Plan): Promise<PreviewResult> => ipcRenderer.invoke(IPC.engine.preview, path, plan),
-    convert: (path: string, plan: Plan): Promise<ConvertResult> => ipcRenderer.invoke(IPC.engine.convert, path, plan)
+    preview: (path: string, plan: Plan): Promise<PreviewResult> =>
+      ipcRenderer.invoke(IPC.engine.preview, path, plan),
+    convert: (path: string, plan: Plan): Promise<ConvertResult> =>
+      ipcRenderer.invoke(IPC.engine.convert, path, plan)
   },
   stats: {
     summary: (): Promise<StatsSummary> => ipcRenderer.invoke(IPC.stats.summary),

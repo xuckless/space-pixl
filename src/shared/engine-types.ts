@@ -19,7 +19,8 @@ export type Depth = 'Eight' | 'Sixteen'
 
 // ── Geometry ─────────────────────────────────────────────────────────────────
 
-export type Resize = 'None' | { Exact: { width: number; height: number } } | { Scale: { factor: number } }
+export type Resize =
+  'None' | { Exact: { width: number; height: number } } | { Scale: { factor: number } }
 
 export type Resampler = 'Nearest' | 'Bilinear' | 'CatmullRom' | 'Lanczos3' | 'Ai'
 
@@ -112,19 +113,10 @@ export type Dither = 'None' | { TriangularNoise: { seed: number } }
 // ── Colour ───────────────────────────────────────────────────────────────────
 
 export type ColorSpaceRef =
-  | 'Srgb'
-  | 'LinearSrgb'
-  | 'DisplayP3'
-  | 'AdobeRgb'
-  | 'Rec2020'
-  | 'GenericGray22'
-  | { Icc: number[] }
+  'Srgb' | 'LinearSrgb' | 'DisplayP3' | 'AdobeRgb' | 'Rec2020' | 'GenericGray22' | { Icc: number[] }
 
 export type RenderingIntent =
-  | 'Perceptual'
-  | 'RelativeColorimetric'
-  | 'Saturation'
-  | 'AbsoluteColorimetric'
+  'Perceptual' | 'RelativeColorimetric' | 'Saturation' | 'AbsoluteColorimetric'
 
 export type ToneMapOperator = 'Bt2390' | 'Hable' | 'Reinhard' | 'Clip'
 export type Peak = 'FromFile' | { Nits: number }

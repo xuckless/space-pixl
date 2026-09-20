@@ -2,15 +2,40 @@
 import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { cpus } from 'os'
 import log from 'electron-log/main'
-import { IPC, type ConvertResult, type InspectResult, type PickResult, type PreviewResult, type StatsSummary } from '../shared/ipc'
+import {
+  IPC,
+  type ConvertResult,
+  type InspectResult,
+  type PickResult,
+  type PreviewResult,
+  type StatsSummary
+} from '../shared/ipc'
 import type { Plan } from '../shared/plan'
 import type { EngineClient } from './engine/client'
 import { Pipeline, toAppError } from './pipeline'
 import type { Store } from './db'
 
 const IMAGE_EXTENSIONS = [
-  'jpg', 'jpeg', 'png', 'heic', 'heif', 'avif', 'jxl', 'tif', 'tiff', 'webp',
-  'cr2', 'cr3', 'arw', 'nef', 'dng', 'raf', 'rw2', 'orf', 'pef', 'srw'
+  'jpg',
+  'jpeg',
+  'png',
+  'heic',
+  'heif',
+  'avif',
+  'jxl',
+  'tif',
+  'tiff',
+  'webp',
+  'cr2',
+  'cr3',
+  'arw',
+  'nef',
+  'dng',
+  'raf',
+  'rw2',
+  'orf',
+  'pef',
+  'srw'
 ]
 
 export function registerIpc(engine: EngineClient, pipeline: Pipeline, store: Store): void {
@@ -44,22 +69,28 @@ export function registerIpc(engine: EngineClient, pipeline: Pipeline, store: Sto
     }
   })
 
-  ipcMain.handle(IPC.engine.preview, async (_e, path: string, plan: Plan): Promise<PreviewResult> => {
-    try {
-      return { ok: true, ...(await pipeline.preview(path, plan)) }
-    } catch (err) {
-      return { ok: false, error: toAppError(err) }
+  ipcMain.handle(
+    IPC.engine.preview,
+    async (_e, path: string, plan: Plan): Promise<PreviewResult> => {
+      try {
+        return { ok: true, ...(await pipeline.preview(path, plan)) }
+      } catch (err) {
+        return { ok: false, error: toAppError(err) }
+      }
     }
-  })
+  )
 
-  ipcMain.handle(IPC.engine.convert, async (_e, path: string, plan: Plan): Promise<ConvertResult> => {
-    try {
-      return { ok: true, ...(await pipeline.convert(path, plan)) }
-    } catch (err) {
-      log.warn('convert failed', path, err)
-      return { ok: false, error: toAppError(err) }
+  ipcMain.handle(
+    IPC.engine.convert,
+    async (_e, path: string, plan: Plan): Promise<ConvertResult> => {
+      try {
+        return { ok: true, ...(await pipeline.convert(path, plan)) }
+      } catch (err) {
+        log.warn('convert failed', path, err)
+        return { ok: false, error: toAppError(err) }
+      }
     }
-  })
+  )
 
   ipcMain.handle(IPC.stats.summary, (): StatsSummary => store.summary())
   ipcMain.handle(IPC.stats.clear, (): StatsSummary => {

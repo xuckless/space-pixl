@@ -39,7 +39,9 @@ function loadNative(): { engine: PixlEngineModule } | { reason: string } {
   } catch (err) {
     const e = err as NodeJS.ErrnoException
     if (e.code === 'MODULE_NOT_FOUND') {
-      return { reason: `${ENGINE_PACKAGE} is not installed for ${process.platform}-${process.arch}` }
+      return {
+        reason: `${ENGINE_PACKAGE} is not installed for ${process.platform}-${process.arch}`
+      }
     }
     return { reason: `${ENGINE_PACKAGE} failed to load: ${e.message}` }
   }
@@ -51,7 +53,10 @@ function toErrorShape(err: unknown): EngineErrorShape {
     return {
       message: typeof e.message === 'string' ? e.message : String(err),
       code: typeof e.code === 'string' ? e.code : 'Unknown',
-      detail: e.detail && typeof e.detail === 'object' ? (e.detail as EngineErrorShape['detail']) : undefined
+      detail:
+        e.detail && typeof e.detail === 'object'
+          ? (e.detail as EngineErrorShape['detail'])
+          : undefined
     }
   }
   return { message: String(err), code: 'Unknown' }
@@ -81,7 +86,13 @@ if (mode === 'mock') {
 }
 
 if (engine) {
-  send({ kind: 'hello', status: 'ready', flavour, version: engine.engineVersion(), reason: flavour === 'mock' ? unavailableReason : undefined })
+  send({
+    kind: 'hello',
+    status: 'ready',
+    flavour,
+    version: engine.engineVersion(),
+    reason: flavour === 'mock' ? unavailableReason : undefined
+  })
 } else {
   send({ kind: 'hello', status: 'unavailable', reason: unavailableReason })
 }
@@ -101,7 +112,12 @@ process.parentPort.on('message', (e) => {
   }
   const fn = engine[method] as ((...a: unknown[]) => unknown) | undefined
   if (typeof fn !== 'function') {
-    send({ kind: 'response', id, ok: false, error: { message: `unknown engine method ${String(method)}`, code: 'BadRequest' } })
+    send({
+      kind: 'response',
+      id,
+      ok: false,
+      error: { message: `unknown engine method ${String(method)}`, code: 'BadRequest' }
+    })
     return
   }
   Promise.resolve()
