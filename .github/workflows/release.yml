@@ -72,6 +72,10 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           SPACE_PIXL_S3_BUCKET: ${{ vars.SPACE_PIXL_S3_BUCKET }}
+          # Recent AWS SDKs add CRC32 checksums to every upload, which many
+          # S3-compatible stores reject; only send them when the API requires.
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
           # --- macOS signing + notarization (Developer ID) ---
           # Base64 of the .p12 export, and its password.
           CSC_LINK: ${{ secrets.CSC_LINK }}
