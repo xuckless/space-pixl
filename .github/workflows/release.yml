@@ -44,9 +44,9 @@ jobs:
             runner: windows-latest
             args: --win --x64
     env:
-      # .npmrc references this for @xuckless/pixl-engine; every step that
-      # touches pnpm needs it, including the setup action's cache probe.
-      GITHUB_PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+      # actions/setup-node writes ~/.npmrc with an auth placeholder that pnpm
+      # expands from this variable (pnpm ignores ${ENV} in a project .npmrc).
+      NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -60,6 +60,8 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          registry-url: https://npm.pkg.github.com
+          scope: '@xuckless'
 
       - name: Install
         run: pnpm install --frozen-lockfile

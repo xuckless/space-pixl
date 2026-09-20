@@ -29,7 +29,7 @@ dev-app-update.yml         update feed for running unpackaged (SPACE_PIXL_FORCE_
 ## Develop
 
 ```sh
-export GITHUB_PACKAGES_TOKEN=<PAT with read:packages>   # for @xuckless/pixl-engine
+pnpm config set //npm.pkg.github.com/:_authToken <PAT with read:packages>   # for @xuckless/pixl-engine (user-level; pnpm ignores ${ENV} in the project .npmrc)
 pnpm install
 pnpm dev            # electron-vite dev with HMR
 pnpm typecheck && pnpm lint
@@ -77,7 +77,7 @@ Set in *Settings → Secrets and variables → Actions*.
 
 | Name | Kind | Purpose |
 |---|---|---|
-| `PACKAGES_TOKEN` | secret | classic PAT with `read:packages` for `@xuckless/pixl-engine` (GitHub forbids secret names starting with `GITHUB_`; workflows expose it to pnpm as `GITHUB_PACKAGES_TOKEN`) |
+| `PACKAGES_TOKEN` | secret | classic PAT with `read:packages` for `@xuckless/pixl-engine` (GitHub forbids secret names starting with `GITHUB_`; workflows hand it to `actions/setup-node` as `NODE_AUTH_TOKEN`) |
 | `RELEASE_PLEASE_TOKEN` | secret (optional) | PAT with `repo` + `workflow`; without it release-please and the bump PR use `GITHUB_TOKEN` and their PRs carry no CI checks |
 | `AWS_ACCESS_KEY_ID` | secret | IDrive e2 access key (S3-compatible) |
 | `AWS_SECRET_ACCESS_KEY` | secret | IDrive e2 secret key |

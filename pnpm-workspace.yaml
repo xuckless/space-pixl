@@ -4,3 +4,8 @@ allowBuilds:
   electron: true
   electron-winstaller: true
   esbuild: true
+# pnpm's supply-chain delay (minimumReleaseAge) would refuse a freshly
+# published engine for a day, including the automatic bump PR. Our own private
+# scope is exempt; everything else keeps the delay.
+minimumReleaseAgeExclude:
+  - '@xuckless/*'
