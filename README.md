@@ -77,12 +77,12 @@ Set in *Settings → Secrets and variables → Actions*.
 
 | Name | Kind | Purpose |
 |---|---|---|
-| `GITHUB_PACKAGES_TOKEN` | secret | PAT with `read:packages` for `@xuckless/pixl-engine` |
-| `RELEASE_PLEASE_TOKEN` | secret | PAT with `repo` + `workflow`; release-please and the bump PR use it so their pushes trigger CI |
+| `GITHUB_PACKAGES_TOKEN` | secret | classic PAT with `read:packages` for `@xuckless/pixl-engine`; required once the engine dependency is added |
+| `RELEASE_PLEASE_TOKEN` | secret (optional) | PAT with `repo` + `workflow`; without it release-please and the bump PR use `GITHUB_TOKEN` and their PRs carry no CI checks |
 | `AWS_ACCESS_KEY_ID` | secret | IDrive e2 access key (S3-compatible) |
 | `AWS_SECRET_ACCESS_KEY` | secret | IDrive e2 secret key |
 | `SPACE_PIXL_S3_BUCKET` | **variable** | bucket name that holds `space-pixl/` |
-| `CSC_LINK` | secret | base64 of the Developer ID Application `.p12` |
+| `CSC_LINK` | secret (optional until signing) | base64 of the Developer ID Application `.p12`; unsigned build when absent |
 | `CSC_KEY_PASSWORD` | secret | password of that `.p12` |
 | `APPLE_ID` | secret | Apple ID used for notarization |
 | `APPLE_APP_SPECIFIC_PASSWORD` | secret | app-specific password for that Apple ID |

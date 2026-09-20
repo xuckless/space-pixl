@@ -12,6 +12,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write   # release-please labels its PRs
 
 jobs:
   release-please:
@@ -23,9 +24,11 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          # A PAT (not GITHUB_TOKEN) so that the release PR's own pushes and
-          # the created tag trigger CI and this workflow.
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          # Prefer a PAT: a release PR opened by GITHUB_TOKEN gets no CI
+          # checks, because pushes made with it trigger no workflows. The
+          # release build is unaffected either way — it is called from this
+          # run, not triggered by the tag.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 

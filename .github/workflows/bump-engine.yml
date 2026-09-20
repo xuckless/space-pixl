@@ -45,8 +45,8 @@ jobs:
 
       - uses: peter-evans/create-pull-request@v7
         with:
-          # A PAT so the PR triggers CI.
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          # Prefer a PAT so the PR triggers CI; GITHUB_TOKEN still opens it.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           branch: deps/pixl-engine-${{ env.ENGINE_VERSION }}
           title: 'fix(engine): bump pixl-engine to ${{ env.ENGINE_VERSION }}'
           commit-message: |
