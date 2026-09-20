@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/xuckless/space-pixl/compare/v0.1.1...v0.1.2) (2026-09-20)
+
+
+### Bug Fixes
+
+* **release:** unsigned builds and a real bucket name ([f989653](https://github.com/xuckless/space-pixl/commit/f989653eaa95ea46d83fd55bc902bafe62570f05))
+
 ## [0.1.1](https://github.com/xuckless/space-pixl/compare/v0.1.0...v0.1.1) (2026-09-20)
 
 
