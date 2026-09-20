@@ -1,0 +1,63 @@
+name: Bump engine
+
+# pixl-engine's release workflow sends a repository_dispatch with
+# { "event_type": "pixl-engine-released", "client_payload": { "version": "0.10.0" } }
+# after publishing @xuckless/pixl-engine. This opens a PR that bumps the
+# dependency. It is a `fix(engine)` commit so release-please cuts a patch
+# release of the app once it is merged. Nothing ships without that merge.
+
+on:
+  repository_dispatch:
+    types: [pixl-engine-released]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: pixl-engine version to bump to
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    env:
+      ENGINE_VERSION: ${{ github.event.client_payload.version || inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Bump @xuckless/pixl-engine
+        run: pnpm up "@xuckless/pixl-engine@${ENGINE_VERSION}"
+        env:
+          GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_PACKAGES_TOKEN }}
+          ELECTRON_SKIP_BINARY_DOWNLOAD: 1
+
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          # A PAT so the PR triggers CI.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          branch: deps/pixl-engine-${{ env.ENGINE_VERSION }}
+          title: 'fix(engine): bump pixl-engine to ${{ env.ENGINE_VERSION }}'
+          commit-message: |
+            fix(engine): bump pixl-engine to ${{ env.ENGINE_VERSION }}
+
+            Automated bump from the pixl-engine release workflow.
+          body: |
+            Bumps `@xuckless/pixl-engine` to **${{ env.ENGINE_VERSION }}**.
+
+            Opened automatically by the pixl-engine release. Merging this lets
+            release-please cut a patch release of Space Pixl that carries the
+            new engine.
+          labels: dependencies, engine
+          delete-branch: true

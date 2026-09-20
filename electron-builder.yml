@@ -1,0 +1,101 @@
+# electron-builder configuration for Space Pixl.
+# https://www.electron.build/configuration
+appId: com.xuckless.spacepixl
+productName: Space Pixl
+copyright: Copyright © 2026 xuckless
+artifactName: ${name}-${version}-${os}-${arch}.${ext}
+
+directories:
+  buildResources: build
+  output: dist
+
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml,pnpm-workspace.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!{.github,release-please-config.json,.release-please-manifest.json}'
+
+# Native addons cannot be loaded from inside the asar archive. The engine
+# binding ships as `@xuckless/pixl-engine` plus one platform package
+# (`@xuckless/pixl-engine-darwin-arm64`, `-darwin-x64`, `-win32-x64-msvc`)
+# holding the `.node` file. electron-builder includes only the optional
+# platform package matching the build's --arch, so per-arch builds each
+# carry exactly one binary.
+asarUnpack:
+  - resources/**
+  - '**/*.node'
+  - 'node_modules/@xuckless/pixl-engine*/**'
+
+# pnpm hoists nothing; electron-builder must follow the symlinks in
+# node_modules/.pnpm to collect production dependencies.
+npmRebuild: false
+nodeGypRebuild: false
+
+mac:
+  category: public.app-category.photography
+  target:
+    # zip is what electron-updater downloads; dmg is what people install from.
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  # Notarization runs when APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD and
+  # APPLE_TEAM_ID are set in the environment (electron-builder reads them).
+  # The Developer ID certificate comes from CSC_LINK / CSC_KEY_PASSWORD.
+  # Without those variables the build is unsigned and the updater will not
+  # accept it — Squirrel.Mac refuses unsigned updates.
+  notarize: true
+  extendInfo:
+    NSPhotoLibraryUsageDescription: Space Pixl reads your photos to measure how much space it can save.
+    NSDesktopFolderUsageDescription: Space Pixl scans folders you choose for images.
+    NSDocumentsFolderUsageDescription: Space Pixl scans folders you choose for images.
+    NSDownloadsFolderUsageDescription: Space Pixl scans folders you choose for images.
+
+dmg:
+  artifactName: ${name}-${version}-${arch}.${ext}
+
+win:
+  executableName: space-pixl
+  target:
+    - target: nsis
+      arch: [x64]
+  # Windows signing is optional for now: when WIN_CSC_LINK / WIN_CSC_KEY_PASSWORD
+  # are set electron-builder signs; otherwise the installer ships unsigned and
+  # SmartScreen warns on first launch. Auto-update still works unsigned.
+  # To move to Azure Trusted Signing later, replace this with `azureSignOptions`.
+  signtoolOptions:
+    publisherName: xuckless
+
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+  oneClick: true
+  perMachine: false
+  # electron-updater installs silently and relaunches.
+  differentialPackage: true
+
+# Update assets live on the IDrive e2 bucket (S3-compatible). Publishing needs
+# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in the environment; the bucket name
+# comes from SPACE_PIXL_S3_BUCKET. The channel is derived from the version:
+# 0.2.0 → latest.yml, 0.2.0-beta.1 → beta.yml, so prereleases never reach
+# stable users. The same block is compiled into the app as its update feed.
+publish:
+  provider: s3
+  endpoint: https://s3.us-midwest-1.idrivee2.com
+  region: us-midwest-1
+  bucket: ${env.SPACE_PIXL_S3_BUCKET}
+  path: /space-pixl
+  acl: public-read
+  # IDrive e2 serves buckets at <bucket>.s3.<region>.idrivee2.com. If the
+  # virtual-hosted URL 403s or fails DNS, uncomment to use path-style URLs
+  # (https://s3.us-midwest-1.idrivee2.com/<bucket>/space-pixl/...).
+  # forcePathStyle: true

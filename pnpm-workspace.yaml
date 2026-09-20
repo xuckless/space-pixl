@@ -1,0 +1,6 @@
+# pnpm settings (pnpm ≥ 11 reads these from here, not package.json).
+# Dependencies allowed to run install scripts. Nothing else may.
+allowBuilds:
+  electron: true
+  electron-winstaller: true
+  esbuild: true

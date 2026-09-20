@@ -1,0 +1,9 @@
+# Update feed used when running unpackaged with SPACE_PIXL_FORCE_UPDATER=1.
+# Mirrors the `publish` block in electron-builder.yml. Replace <bucket> with
+# the real bucket name (electron-updater does not expand env vars here).
+provider: s3
+endpoint: https://s3.us-midwest-1.idrivee2.com
+region: us-midwest-1
+bucket: <bucket>
+path: /space-pixl
+# forcePathStyle: true

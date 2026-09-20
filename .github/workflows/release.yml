@@ -1,0 +1,99 @@
+name: Release
+
+# Builds, signs and publishes installers for one tag on every platform.
+# Called by release-please.yml after a release is cut, or by hand for a tag.
+#
+# Channel: electron-builder derives it from the version. 0.3.0 publishes
+# latest.yml / latest-mac.yml; 0.3.0-beta.1 publishes beta.yml / beta-mac.yml.
+# Stable users never see a prerelease.
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Git tag to build (e.g. v0.2.0)
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Git tag to build (e.g. v0.2.0)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS arm64
+            runner: macos-15
+            args: --mac --arm64
+          - name: macOS x64
+            # Intel runners: macos-13 was retired; macos-15-intel is the
+            # current Intel label. Adjust if GitHub renames it.
+            runner: macos-15-intel
+            args: --mac --x64
+          - name: Windows x64
+            runner: windows-latest
+            args: --win --x64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+        env:
+          GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_PACKAGES_TOKEN }}
+
+      - name: Build renderer, preload and main
+        run: pnpm exec electron-vite build
+
+      - name: Package and publish
+        run: pnpm exec electron-builder ${{ matrix.args }} --publish always
+        env:
+          # --- update feed (IDrive e2, S3-compatible) ---
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          SPACE_PIXL_S3_BUCKET: ${{ vars.SPACE_PIXL_S3_BUCKET }}
+          # --- macOS signing + notarization (Developer ID) ---
+          # Base64 of the .p12 export, and its password.
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # --- Windows signing (optional; unsigned when absent) ---
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          # Fail loudly if a mac build ends up unsigned rather than publishing
+          # an update that clients will reject.
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ startsWith(matrix.runner, 'macos') && 'true' || 'false' }}
+
+      - name: Keep installers as a workflow artifact too
+        uses: actions/upload-artifact@v4
+        with:
+          name: space-pixl-${{ inputs.tag }}-${{ matrix.runner }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/*.exe
+            dist/*.blockmap
+            dist/*.yml
+          if-no-files-found: error
