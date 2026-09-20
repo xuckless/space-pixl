@@ -11,20 +11,61 @@ engine crash restarts the worker instead of taking the app down.
 ## Layout
 
 ```
-src/main/index.ts          app entry: window, IPC, engine client, updater
-src/main/updater.ts        electron-updater wiring, channel setting, IPC
-src/main/settings.ts       the one settings file (update channel) in userData
-src/main/engine/host.ts    runs in utilityProcess; loads @xuckless/pixl-engine by name
-src/main/engine/client.ts  main-side: spawns/restarts the host, promises over messages
-src/main/engine/ipc.ts     renderer-facing engine IPC (status, probe, pick-and-probe)
-src/preload/index.ts       contextBridge → window.spacePixl.{app,updates,engine}
-src/renderer/              React UI
-src/shared/ipc.ts          channel names and the state types both sides share
-src/shared/engine-types.ts loose types for the engine's serde values (TODO: real ones)
-electron-builder.yml       packaging, signing, notarization, update feed
-dev-app-update.yml         update feed for running unpackaged (SPACE_PIXL_FORCE_UPDATER=1)
-.github/workflows/         ci · release-please · release · bump-engine
+src/main/index.ts            app entry: window, store, engine client, IPC, updater
+src/main/ipc.ts              every renderer-facing handler; results are { ok } | { ok: false, error }
+src/main/pipeline.ts         the app's three calls over the engine's four: inspect · preview · convert
+src/main/db.ts               the SQLite store (node:sqlite, no native module): conversions + inspections
+src/main/engine/host.ts      runs in utilityProcess; loads @xuckless/pixl-engine, or the placeholder
+src/main/engine/mock.ts      the development placeholder engine (dev builds only, never packaged)
+src/main/engine/client.ts    main-side: spawns/restarts the host, promises over messages
+src/main/updater.ts          electron-updater wiring, channel setting, IPC
+src/main/settings.ts         the one settings file (update channel) in userData
+src/preload/index.ts         contextBridge → window.spacePixl.{app,updates,files,engine,stats}
+src/shared/engine-types.ts   the engine's request/report model in its serde shape (typed, complete)
+src/shared/plan.ts           the app's dials as a flat Plan, and Plan → ConvertRequest
+src/shared/recommend.ts      the decision layer: which conversions to offer and which to lead with
+src/shared/ipc.ts            channel names and the result types both sides share
+src/renderer/src/pages/      Optimise (analyse → recommend → dials → preview → convert) · Stats · Settings
+src/renderer/src/components/ AnalysisPanel · RecommendationPanel · DialsPanel · PreviewPanel · charts · ui
+tests/                       node --test over the pure modules (plan, recommend, db, mock)
+electron-builder.yml         packaging, signing, notarization, update feed
+.github/workflows/           ci · release-please · release · bump-engine
 ```
+
+## How a conversion happens
+
+The engine makes no decisions, so every decision is in this repo and can be read:
+
+1. **inspect** — `probe` (what is this file), `analyze` (what do its pixels look like),
+   `suggestEncode` (how was it encoded), then `recommend()` turns those into a verdict
+   and ranked candidates with expected savings taken from the engine README's measurements
+   (JPEG→JXL repack −19% and reversible, AVIF q60 −68%, HEIC +20%, PNG under 5 MB not worth
+   it, RAW→DNG −14%, …). The source is also rendered to a fit-to-screen PNG for the preview.
+2. **preview** — every dial change re-runs the _real_ encode to a temp file, then decodes that
+   output back to PNG. The size shown is the file's size; the "after" image is the encoded pixels.
+3. **convert** — the same encode beside the original (`IMG_0042.jxl` next to `IMG_0042.jpg`,
+   never overwriting, the original untouched) and a row in the store.
+
+The dials cover the whole converter surface: every encoder knob, resize + resampler,
+depth/channels, metadata carry-over, colour policy (Preserve / Assign / ConvertTo / ToneMap),
+RAW development and dither. Grading (white balance, exposure, curves…) is deliberately
+absent — that belongs to a separate app.
+
+## The placeholder engine
+
+`@xuckless/pixl-engine` ships macOS and Windows binaries only. In development on any
+other platform the host falls back to `src/main/engine/mock.ts`: it reads real JPEG/PNG/WebP
+headers, synthesises pixel statistics, estimates output sizes from the README ratios, and
+refuses what the shipped engine refuses (HEIC → `EncoderUnavailable`). Everything it
+produces is flagged in the UI and in the store (`engine = 'mock'`). A packaged build never
+uses it: `SPACE_PIXL_ENGINE` is `native` (default when packaged), `auto` (default in
+`pnpm dev`) or `mock`.
+
+## The store
+
+`userData/space-pixl.db`, opened with Node's built-in `node:sqlite` (nothing to rebuild for
+Electron). Two tables, `conversions` and `inspections`; the Stats page is one `summary()`
+over them. A server-side store may come later; the `Store` class is the seam.
 
 ## Develop
 
@@ -32,7 +73,7 @@ dev-app-update.yml         update feed for running unpackaged (SPACE_PIXL_FORCE_
 pnpm config set //npm.pkg.github.com/:_authToken <PAT with read:packages>   # for @xuckless/pixl-engine (user-level; pnpm ignores ${ENV} in the project .npmrc)
 pnpm install
 pnpm dev            # electron-vite dev with HMR
-pnpm typecheck && pnpm lint
+pnpm typecheck && pnpm lint && pnpm test
 pnpm build:unpack   # unpacked app in dist/ for a local look
 ```
 
