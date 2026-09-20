@@ -29,7 +29,7 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           # read:packages PAT for @xuckless/pixl-engine on GitHub Packages
-          GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_PACKAGES_TOKEN }}
+          GITHUB_PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
           # electron-builder install-app-deps runs in postinstall; no binary needed
           ELECTRON_SKIP_BINARY_DOWNLOAD: 1
 

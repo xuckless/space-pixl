@@ -77,7 +77,7 @@ Set in *Settings → Secrets and variables → Actions*.
 
 | Name | Kind | Purpose |
 |---|---|---|
-| `GITHUB_PACKAGES_TOKEN` | secret | classic PAT with `read:packages` for `@xuckless/pixl-engine`; required once the engine dependency is added |
+| `PACKAGES_TOKEN` | secret | classic PAT with `read:packages` for `@xuckless/pixl-engine` (GitHub forbids secret names starting with `GITHUB_`; workflows expose it to pnpm as `GITHUB_PACKAGES_TOKEN`) |
 | `RELEASE_PLEASE_TOKEN` | secret (optional) | PAT with `repo` + `workflow`; without it release-please and the bump PR use `GITHUB_TOKEN` and their PRs carry no CI checks |
 | `AWS_ACCESS_KEY_ID` | secret | IDrive e2 access key (S3-compatible) |
 | `AWS_SECRET_ACCESS_KEY` | secret | IDrive e2 secret key |

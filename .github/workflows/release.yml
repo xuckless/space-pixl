@@ -60,7 +60,7 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
         env:
-          GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_PACKAGES_TOKEN }}
+          GITHUB_PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
 
       - name: Build renderer, preload and main
         run: pnpm exec electron-vite build

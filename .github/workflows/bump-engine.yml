@@ -40,7 +40,7 @@ jobs:
       - name: Bump @xuckless/pixl-engine
         run: pnpm up "@xuckless/pixl-engine@${ENGINE_VERSION}"
         env:
-          GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_PACKAGES_TOKEN }}
+          GITHUB_PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
           ELECTRON_SKIP_BINARY_DOWNLOAD: 1
 
       - uses: peter-evans/create-pull-request@v7
