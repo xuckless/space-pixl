@@ -1,23 +1,21 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
-import { IPC, type EngineStatus, type UpdateChannel, type UpdateState } from '../shared/ipc'
-import type { SourceInfo } from '../shared/engine-types'
-
-export interface ProbeFailure {
-  ok: false
-  cancelled?: boolean
-  path?: string
-  error?: { message: string; code: string; detail?: unknown }
-}
-export interface ProbeSuccess {
-  ok: true
-  path?: string
-  info: SourceInfo
-}
-export type ProbeResult = ProbeSuccess | ProbeFailure
+import {
+  IPC,
+  type ConvertResult,
+  type EngineStatus,
+  type InspectResult,
+  type PickResult,
+  type PreviewResult,
+  type StatsSummary,
+  type UpdateChannel,
+  type UpdateState
+} from '../shared/ipc'
+import type { Plan } from '../shared/plan'
 
 const api = {
   app: {
-    version: (): Promise<string> => ipcRenderer.invoke(IPC.app.version)
+    version: (): Promise<string> => ipcRenderer.invoke(IPC.app.version),
+    cpus: (): Promise<number> => ipcRenderer.invoke(IPC.app.cpus)
   },
   updates: {
     getState: (): Promise<UpdateState> => ipcRenderer.invoke(IPC.updates.getState),
@@ -32,10 +30,21 @@ const api = {
       return () => ipcRenderer.removeListener(IPC.updates.event, listener)
     }
   },
+  files: {
+    pick: (): Promise<PickResult> => ipcRenderer.invoke(IPC.files.pick),
+    reveal: (path: string): Promise<void> => ipcRenderer.invoke(IPC.files.reveal, path)
+  },
   engine: {
     status: (): Promise<EngineStatus> => ipcRenderer.invoke(IPC.engine.status),
-    probe: (path: string): Promise<ProbeResult> => ipcRenderer.invoke(IPC.engine.probe, path),
-    pickAndProbe: (): Promise<ProbeResult> => ipcRenderer.invoke(IPC.engine.pickAndProbe)
+    inspect: (path: string): Promise<InspectResult> => ipcRenderer.invoke(IPC.engine.inspect, path),
+    preview: (path: string, plan: Plan): Promise<PreviewResult> =>
+      ipcRenderer.invoke(IPC.engine.preview, path, plan),
+    convert: (path: string, plan: Plan): Promise<ConvertResult> =>
+      ipcRenderer.invoke(IPC.engine.convert, path, plan)
+  },
+  stats: {
+    summary: (): Promise<StatsSummary> => ipcRenderer.invoke(IPC.stats.summary),
+    clear: (): Promise<StatsSummary> => ipcRenderer.invoke(IPC.stats.clear)
   }
 }
 

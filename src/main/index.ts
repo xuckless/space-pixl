@@ -4,19 +4,37 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { IPC } from '../shared/ipc'
+import type { EngineMode } from '../shared/engine-types'
 import { EngineClient } from './engine/client'
-import { registerEngineIpc } from './engine/ipc'
+import { registerIpc } from './ipc'
+import { Pipeline } from './pipeline'
+import { Store } from './db'
 import { setupUpdater } from './updater'
 
 log.initialize()
 log.transports.file.level = 'info'
 
 const engine = new EngineClient()
+let store: Store | undefined
+
+/**
+ * Which engine the host may use. A packaged app only ever runs the native
+ * addon; in development the placeholder stands in when the addon is missing
+ * for this platform (Linux has none published; `pnpm engine:linux` builds one
+ * locally), and SPACE_PIXL_ENGINE overrides.
+ */
+function engineMode(): EngineMode {
+  const env = process.env['SPACE_PIXL_ENGINE']
+  if (env === 'native' || env === 'mock' || env === 'auto') return env
+  return app.isPackaged ? 'native' : 'auto'
+}
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1240,
+    height: 860,
+    minWidth: 900,
+    minHeight: 640,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -49,8 +67,11 @@ app.whenReady().then(() => {
 
   ipcMain.handle(IPC.app.version, () => app.getVersion())
 
-  engine.start()
-  registerEngineIpc(engine)
+  store = Store.open(join(app.getPath('userData'), 'space-pixl.db'))
+  store.reconcile()
+
+  engine.start(engineMode())
+  registerIpc(engine, new Pipeline(engine, store), store)
   setupUpdater()
 
   createWindow()
@@ -66,4 +87,7 @@ app.on('window-all-closed', () => {
   }
 })
 
-app.on('before-quit', () => engine.stop())
+app.on('before-quit', () => {
+  engine.stop()
+  store?.close()
+})

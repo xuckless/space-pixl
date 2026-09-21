@@ -12,7 +12,9 @@ import type {
   ConvertReport,
   Encode,
   EngineErrorShape,
+  EngineFlavour,
   EngineMethod,
+  EngineMode,
   HostToMain,
   ImageStats,
   SourceInfo
@@ -44,8 +46,10 @@ export class EngineClient {
   private inflight = new Map<number, Pending>()
   private status: EngineStatus = { status: 'starting', restarts: 0 }
   private stopped = false
+  private mode: EngineMode = 'native'
 
-  start(): void {
+  start(mode: EngineMode): void {
+    this.mode = mode
     this.stopped = false
     this.spawn()
   }
@@ -58,6 +62,11 @@ export class EngineClient {
 
   getStatus(): EngineStatus {
     return this.status
+  }
+
+  /** Which implementation is answering right now. */
+  flavour(): EngineFlavour {
+    return this.status.flavour ?? 'native'
   }
 
   probe(path: string): Promise<SourceInfo> {
@@ -77,7 +86,8 @@ export class EngineClient {
     const entry = join(__dirname, 'engine-host.js')
     const child = utilityProcess.fork(entry, [], {
       serviceName: 'pixl-engine',
-      stdio: 'pipe'
+      stdio: 'pipe',
+      env: { ...process.env, SPACE_PIXL_ENGINE: this.mode }
     })
     this.child = child
     this.status = { ...this.status, status: 'starting', reason: undefined }
@@ -115,7 +125,13 @@ export class EngineClient {
     if (msg.kind === 'hello') {
       this.status =
         msg.status === 'ready'
-          ? { status: 'ready', version: msg.version, restarts: this.status.restarts }
+          ? {
+              status: 'ready',
+              flavour: msg.flavour ?? 'native',
+              version: msg.version,
+              reason: msg.reason,
+              restarts: this.status.restarts
+            }
           : { status: 'unavailable', reason: msg.reason, restarts: this.status.restarts }
       log.info('engine', this.status)
       return
