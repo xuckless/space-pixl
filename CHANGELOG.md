@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/xuckless/space-pixl/compare/v0.1.2...v0.1.3) (2026-09-21)
+
+
+### Features
+
+* **engine:** depend on @xuckless/pixl-engine 0.10.1 ([b87da7f](https://github.com/xuckless/space-pixl/commit/b87da7f0b536bbed0cf8160a1904c571639f02a2))
+
 ## [0.1.2](https://github.com/xuckless/space-pixl/compare/v0.1.1...v0.1.2) (2026-09-20)
 
 
