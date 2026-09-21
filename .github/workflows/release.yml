@@ -32,15 +32,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Both macOS builds run on the self-hosted MacBook; electron-builder
+          # cross-packages x64 on arm64 (pnpm-workspace.yaml makes pnpm
+          # install both darwin engine packages there). Windows stays on a
+          # GitHub-hosted runner.
           - name: macOS arm64
-            runner: macos-15
+            key: mac-arm64
+            runner: [self-hosted, macOS, ARM64]
             args: --mac --arm64
           - name: macOS x64
-            # Intel runners: macos-13 was retired; macos-15-intel is the
-            # current Intel label. Adjust if GitHub renames it.
-            runner: macos-15-intel
+            key: mac-x64
+            runner: [self-hosted, macOS, ARM64]
             args: --mac --x64
           - name: Windows x64
+            key: win-x64
             runner: windows-latest
             args: --win --x64
     env:
@@ -108,12 +113,12 @@ jobs:
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
           # Look for a Developer ID identity in the keychain when no CSC_LINK
           # is given; finding none yields an unsigned build with a warning.
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ startsWith(matrix.runner, 'macos') && 'true' || 'false' }}
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ runner.os == 'macOS' && 'true' || 'false' }}
 
       - name: Keep installers as a workflow artifact too
         uses: actions/upload-artifact@v4
         with:
-          name: space-pixl-${{ inputs.tag }}-${{ matrix.runner }}
+          name: space-pixl-${{ inputs.tag }}-${{ matrix.key }}
           path: |
             dist/*.dmg
             dist/*.zip
