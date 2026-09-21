@@ -111,9 +111,13 @@ jobs:
           # S3-compatible stores reject; only send them when the API requires.
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
-          # Look for a Developer ID identity in the keychain when no CSC_LINK
-          # is given; finding none yields an unsigned build with a warning.
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ runner.os == 'macOS' && 'true' || 'false' }}
+          # The self-hosted MacBook's keychain holds only an "Apple
+          # Development" identity, which electron-builder rejects for dmg and
+          # zip anyway. Turning discovery off makes the unsigned build
+          # deliberate instead of a warning nobody reads. Set this back to
+          # `${{ runner.os == 'macOS' }}` once a Developer ID Application
+          # certificate is in the keychain, or set CSC_LINK instead.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
 
       - name: Keep installers as a workflow artifact too
         uses: actions/upload-artifact@v4
