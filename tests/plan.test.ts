@@ -1,8 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  DNG_METADATA,
   buildConvertRequest,
   defaultPlan,
+  metadataFor,
   outputFileName,
   planIsLossless,
   targetsFor
@@ -19,7 +21,7 @@ test('the default plan builds the exact shape the binding expects', () => {
     resampler: 'Lanczos3',
     pixel: { depth: null, channels: null },
     encode: { JxlLossy: { distance: 1, effort: 7, threads: 8 } },
-    metadata: { exif: true, icc: true, xmp: true, iptc: true },
+    metadata: { exif: true, icc: true, xmp: false, iptc: false },
     color: 'Preserve',
     linear_resample: false,
     raw: null,
@@ -90,4 +92,40 @@ test('targets are filtered by what the source can become', () => {
   assert.ok(!targetsFor(source({ input: 'Png' })).includes('jxl-repack'))
   assert.equal(outputFileName('IMG_0042.JPG', 'jxl-repack'), 'IMG_0042.jxl')
   assert.equal(outputFileName('noext', 'avif'), 'noext.avif')
+})
+
+test('a DNG target gets the one metadata policy the engine accepts, whatever the dials say', () => {
+  const info = source({ input: 'Raw', format: 'cr2', is_raw_mosaic: true, jpeg: null })
+  const p = defaultPlan()
+  p.target = 'dng'
+  p.metadata = { exif: false, icc: true, xmp: true, iptc: true }
+  assert.deepEqual(metadataFor(p, info), DNG_METADATA)
+  const req = buildConvertRequest(p, info, '/x/IMG.CR2', { Path: '/x/IMG.dng' })
+  assert.deepEqual(req.metadata, { exif: true, icc: false, xmp: false, iptc: false })
+})
+
+test('a passthrough target keeps everything, since the engine cannot drop any of it', () => {
+  const p = defaultPlan()
+  p.target = 'jxl-repack'
+  p.metadata = { exif: false, icc: false, xmp: false, iptc: false }
+  assert.deepEqual(metadataFor(p, source()), { exif: true, icc: true, xmp: true, iptc: true })
+})
+
+test('only the metadata a file carries is copied, and IPTC only where the target has a place', () => {
+  const all = source({ has_exif: true, has_xmp: true, has_iptc: true })
+  const p = defaultPlan()
+  p.target = 'jpeg'
+  assert.deepEqual(metadataFor(p, all), { exif: true, icc: true, xmp: true, iptc: true })
+  // JXL has no standard place for IPTC.
+  p.target = 'jxl-lossy'
+  assert.deepEqual(metadataFor(p, all), { exif: true, icc: true, xmp: true, iptc: false })
+  // A bare file: nothing to copy but the colour description, which the engine always writes.
+  const bare = source({ has_exif: false, has_xmp: false, has_iptc: false })
+  assert.deepEqual(metadataFor(p, bare), { exif: false, icc: true, xmp: false, iptc: false })
+  // Developing a RAW: the camera EXIF comes along; the output is tagged sRGB by the engine.
+  const raw = source({ input: 'Raw', format: 'cr2', is_raw_mosaic: true, jpeg: null })
+  assert.deepEqual(metadataFor(p, raw), { exif: true, icc: true, xmp: false, iptc: false })
+  // The dial itself is never rewritten, so a switch turned off stays off.
+  p.metadata.exif = false
+  assert.equal(metadataFor(p, all).exif, false)
 })

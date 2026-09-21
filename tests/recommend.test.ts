@@ -98,6 +98,14 @@ test('RAW leads with DNG and every candidate builds a valid request shape', () =
     const req = buildConvertRequest(c.plan, info, '/x/IMG.CR2', { Path: '/x/out' })
     if (c.plan.target === 'dng') assert.equal(req.raw, null)
     else assert.notEqual(req.raw, null)
+    // Every RAW candidate asks only for what the engine accepts, so the
+    // recommended click converts without a policy error.
+    assert.deepEqual(
+      req.metadata,
+      c.plan.target === 'dng'
+        ? { exif: true, icc: false, xmp: false, iptc: false }
+        : { exif: true, icc: true, xmp: false, iptc: false }
+    )
   }
 })
 

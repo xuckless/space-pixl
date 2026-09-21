@@ -3,6 +3,7 @@ import {
   TARGETS,
   targetsFor,
   chromaLabel,
+  metadataFor,
   subsamplingLabel,
   type Plan,
   type TargetFormat
@@ -345,6 +346,49 @@ export function DialsPanel({
   ).map((s) => ({ value: s, label: s.replace(/([A-Z])/g, ' $1').trim() }))
   const showRaw = info.input === 'Raw' && plan.target !== 'dng'
   const sdrTarget = !target.hdrCapable
+  // The metadata that will actually be written. The switches show that, not
+  // the raw dial state: a kind the file does not carry (or the target cannot
+  // hold) is locked off, and a target that fixes the whole policy locks all.
+  const metadata = metadataFor(plan, info)
+  const dngTarget = plan.target === 'dng'
+  const fixedPolicy = dngTarget || passthrough
+  const hasColour = info.has_icc || info.has_cicp
+  const metadataKinds: {
+    key: keyof Plan['metadata']
+    label: string
+    plain: string
+    locked: boolean
+  }[] = [
+    {
+      key: 'exif',
+      label: 'EXIF',
+      plain: 'camera and shot details',
+      locked: fixedPolicy || !info.has_exif
+    },
+    { key: 'icc', label: 'ICC / CICP', plain: 'colour description', locked: fixedPolicy },
+    {
+      key: 'xmp',
+      label: 'XMP',
+      plain: 'edits, keywords and ratings',
+      locked: fixedPolicy || !info.has_xmp
+    },
+    {
+      key: 'iptc',
+      label: 'IPTC',
+      plain: 'captions and credits',
+      locked: fixedPolicy || !info.has_iptc || !target.carriesIptc
+    }
+  ]
+  const copied = metadataKinds.filter((k) => k.key !== 'icc')
+  const carried = copied.filter((k) => info[`has_${k.key}`])
+  const missing = copied.length - carried.length
+  const list = (xs: string[]): string =>
+    xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`
+  const colourNote = hasColour
+    ? `Its ${info.has_icc ? 'colour profile' : 'colour code points'} travel with it.`
+    : plan.color.policy === 'Preserve'
+      ? `It states no colour space, so the output is tagged as ${info.color} (assumed).`
+      : 'The colour conversion tags the output with the space you chose.'
 
   return (
     <section className="card dials">
@@ -493,31 +537,42 @@ export function DialsPanel({
 
       <h3>Metadata</h3>
       <div className="row">
-        <Toggle
-          label="EXIF"
-          checked={plan.metadata.exif}
-          onChange={(v) => mutate((p) => (p.metadata.exif = v))}
-        />
-        <Toggle
-          label="ICC / CICP"
-          checked={plan.metadata.icc}
-          onChange={(v) => mutate((p) => (p.metadata.icc = v))}
-        />
-        <Toggle
-          label="XMP"
-          checked={plan.metadata.xmp}
-          onChange={(v) => mutate((p) => (p.metadata.xmp = v))}
-        />
-        <Toggle
-          label="IPTC"
-          checked={plan.metadata.iptc}
-          onChange={(v) => mutate((p) => (p.metadata.iptc = v))}
-        />
+        {metadataKinds.map((k) => (
+          <Toggle
+            key={k.key}
+            label={k.label}
+            checked={metadata[k.key]}
+            disabled={k.locked}
+            onChange={(v) => mutate((p) => (p.metadata[k.key] = v))}
+          />
+        ))}
       </div>
-      <p className="muted small">
-        Copied verbatim, never rewritten. Turning ICC off on a wide-gamut photo leaves the output
-        looking wrong everywhere.
-      </p>
+      {dngTarget ? (
+        <p className="muted small">
+          A DNG keeps the camera&apos;s shot details (EXIF) and nothing else. The format decides
+          this, so there is nothing to choose here.
+        </p>
+      ) : passthrough ? (
+        <p className="muted small">
+          This target copies the file byte for byte, so everything inside comes along unchanged.
+        </p>
+      ) : (
+        <p className="muted small">
+          {carried.length
+            ? `This file carries ${list(carried.map((k) => `${k.label} (${k.plain})`))}. Whatever is on is copied across untouched, never rewritten.`
+            : 'This file carries no EXIF, XMP or IPTC to copy across.'}{' '}
+          {colourNote}
+          {info.has_iptc && !target.carriesIptc
+            ? ` ${target.label} has no place for IPTC, so it is dropped.`
+            : ''}
+          {missing > 0 ? ' Greyed switches have nothing to copy.' : ''}
+        </p>
+      )}
+      {!fixedPolicy && !metadata.icc && (
+        <p className="warn small">
+          With the colour description off, a wide-gamut or HDR photo looks wrong on every screen.
+        </p>
+      )}
 
       <h3>Colour</h3>
       <Field label="Policy">

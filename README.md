@@ -79,6 +79,11 @@ pnpm typecheck && pnpm lint && pnpm test
 pnpm build:unpack   # unpacked app in dist/ for a local look
 ```
 
+If `pnpm dev` fails with `Error: Electron uninstall`, the `electron` package has no binary
+under `node_modules` (its postinstall was skipped, for instance by an install run with
+`ELECTRON_SKIP_BINARY_DOWNLOAD=1`). Fetch it with `node node_modules/electron/install.js`;
+`pnpm rebuild electron` will not, since pnpm considers the package already built.
+
 Until `@xuckless/pixl-engine` is published the app runs without it and the Engine card
 shows "Unavailable". Add the dependency with
 `pnpm add @xuckless/pixl-engine` once it exists; nothing else changes.

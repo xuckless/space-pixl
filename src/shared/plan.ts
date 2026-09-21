@@ -58,6 +58,8 @@ export interface TargetInfo {
   /** Channel counts the encoder writes; empty for passthrough. */
   channels: number[]
   hdrCapable: boolean
+  /** Whether the container has a standard place for IPTC. Elsewhere the engine drops it and reports so. */
+  carriesIptc: boolean
   /** Whether the shipped engine build can produce it. HEIC needs x265 (GPL), which is excluded. */
   shipped: boolean
 }
@@ -73,6 +75,7 @@ export const TARGETS: Record<TargetFormat, TargetInfo> = {
     depths: ['Eight'],
     channels: [],
     hdrCapable: false,
+    carriesIptc: false,
     shipped: true
   },
   'jxl-lossy': {
@@ -85,6 +88,7 @@ export const TARGETS: Record<TargetFormat, TargetInfo> = {
     depths: ['Eight', 'Sixteen'],
     channels: [1, 2, 3, 4],
     hdrCapable: true,
+    carriesIptc: false,
     shipped: true
   },
   'jxl-lossless': {
@@ -97,6 +101,7 @@ export const TARGETS: Record<TargetFormat, TargetInfo> = {
     depths: ['Eight', 'Sixteen'],
     channels: [1, 2, 3, 4],
     hdrCapable: true,
+    carriesIptc: false,
     shipped: true
   },
   'jpeg-from-jxl': {
@@ -109,6 +114,7 @@ export const TARGETS: Record<TargetFormat, TargetInfo> = {
     depths: ['Eight'],
     channels: [],
     hdrCapable: false,
+    carriesIptc: false,
     shipped: true
   },
   avif: {
@@ -121,6 +127,7 @@ export const TARGETS: Record<TargetFormat, TargetInfo> = {
     depths: ['Eight', 'Sixteen'],
     channels: [3, 4],
     hdrCapable: true,
+    carriesIptc: true,
     shipped: true
   },
   webp: {
@@ -133,6 +140,7 @@ export const TARGETS: Record<TargetFormat, TargetInfo> = {
     depths: ['Eight'],
     channels: [3, 4],
     hdrCapable: false,
+    carriesIptc: false,
     shipped: true
   },
   jpeg: {
@@ -145,6 +153,7 @@ export const TARGETS: Record<TargetFormat, TargetInfo> = {
     depths: ['Eight'],
     channels: [1, 3],
     hdrCapable: false,
+    carriesIptc: true,
     shipped: true
   },
   png: {
@@ -157,6 +166,7 @@ export const TARGETS: Record<TargetFormat, TargetInfo> = {
     depths: ['Eight', 'Sixteen'],
     channels: [1, 2, 3, 4],
     hdrCapable: true,
+    carriesIptc: false,
     shipped: true
   },
   heic: {
@@ -169,6 +179,7 @@ export const TARGETS: Record<TargetFormat, TargetInfo> = {
     depths: ['Eight', 'Sixteen'],
     channels: [3, 4],
     hdrCapable: true,
+    carriesIptc: true,
     shipped: false
   },
   tiff: {
@@ -181,6 +192,7 @@ export const TARGETS: Record<TargetFormat, TargetInfo> = {
     depths: ['Eight', 'Sixteen'],
     channels: [1, 2, 3, 4],
     hdrCapable: false,
+    carriesIptc: true,
     shipped: true
   },
   dng: {
@@ -193,6 +205,7 @@ export const TARGETS: Record<TargetFormat, TargetInfo> = {
     depths: ['Eight', 'Sixteen'],
     channels: [],
     hdrCapable: false,
+    carriesIptc: false,
     shipped: true
   }
 }
@@ -270,6 +283,45 @@ export interface Plan {
     crop: DngCrop
   }
   dither: { mode: 'None' | 'TriangularNoise'; seed: number }
+}
+
+/**
+ * What a DNG always carries: the camera's own EXIF and nothing else. The
+ * engine refuses any other policy for a DNG rather than quietly ignore half
+ * of it, so the plan never asks for one.
+ */
+export const DNG_METADATA: Readonly<MetadataPolicy> = {
+  exif: true,
+  icc: false,
+  xmp: false,
+  iptc: false
+}
+
+/**
+ * The metadata policy that actually applies for a plan against a source, so
+ * the dials show what will happen and the click converts first time. The
+ * dials themselves hold the user's intent and are never rewritten.
+ *
+ * - A DNG gets the one policy the engine accepts.
+ * - A passthrough target copies the bitstream and cannot drop anything, so
+ *   the engine requires everything on.
+ * - EXIF, XMP and IPTC are pure copies: a kind the file does not carry is
+ *   off, and IPTC is also off for a container with no place for it.
+ * - The colour description is never masked: the engine always writes one,
+ *   from the file's own profile or code points, from the space it assumed,
+ *   or from the destination of a colour conversion.
+ */
+export function metadataFor(plan: Plan, info: SourceInfo): MetadataPolicy {
+  const target = TARGETS[plan.target]
+  if (plan.target === 'dng') return { ...DNG_METADATA }
+  if (target.passthrough) return { exif: true, icc: true, xmp: true, iptc: true }
+  const m = plan.metadata
+  return {
+    exif: m.exif && info.has_exif,
+    icc: m.icc,
+    xmp: m.xmp && info.has_xmp,
+    iptc: m.iptc && info.has_iptc && target.carriesIptc
+  }
 }
 
 /** Every dial at the app's chosen starting position. */
@@ -556,7 +608,7 @@ export function buildConvertRequest(
           channels: plan.pixel.channels === 'keep' ? null : plan.pixel.channels
         },
     encode: planEncode(plan),
-    metadata: { ...plan.metadata },
+    metadata: metadataFor(plan, info),
     color: passthrough ? 'Preserve' : colorFor(plan),
     linear_resample: passthrough ? false : plan.linearResample,
     raw: info.input === 'Raw' && plan.target !== 'dng' ? rawFor(plan) : null,
