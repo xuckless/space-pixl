@@ -32,15 +32,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Both macOS builds run on the self-hosted MacBook; electron-builder
+          # cross-packages x64 on arm64 (pnpm-workspace.yaml makes pnpm
+          # install both darwin engine packages there). Windows stays on a
+          # GitHub-hosted runner.
           - name: macOS arm64
-            runner: macos-15
+            key: mac-arm64
+            runner: [self-hosted, macOS, ARM64]
             args: --mac --arm64
           - name: macOS x64
-            # Intel runners: macos-13 was retired; macos-15-intel is the
-            # current Intel label. Adjust if GitHub renames it.
-            runner: macos-15-intel
+            key: mac-x64
+            runner: [self-hosted, macOS, ARM64]
             args: --mac --x64
           - name: Windows x64
+            key: win-x64
             runner: windows-latest
             args: --win --x64
     env:
@@ -106,14 +111,18 @@ jobs:
           # S3-compatible stores reject; only send them when the API requires.
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
-          # Look for a Developer ID identity in the keychain when no CSC_LINK
-          # is given; finding none yields an unsigned build with a warning.
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ startsWith(matrix.runner, 'macos') && 'true' || 'false' }}
+          # The self-hosted MacBook's keychain holds only an "Apple
+          # Development" identity, which electron-builder rejects for dmg and
+          # zip anyway. Turning discovery off makes the unsigned build
+          # deliberate instead of a warning nobody reads. Set this back to
+          # `${{ runner.os == 'macOS' }}` once a Developer ID Application
+          # certificate is in the keychain, or set CSC_LINK instead.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
 
       - name: Keep installers as a workflow artifact too
         uses: actions/upload-artifact@v4
         with:
-          name: space-pixl-${{ inputs.tag }}-${{ matrix.runner }}
+          name: space-pixl-${{ inputs.tag }}-${{ matrix.key }}
           path: |
             dist/*.dmg
             dist/*.zip
