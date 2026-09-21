@@ -4,8 +4,15 @@ import { Optimise } from './pages/Optimise'
 import { Stats } from './pages/Stats'
 import { Settings } from './pages/Settings'
 import { engineLabel } from './lib/labels'
+import { Dot, Logo } from './components/ui'
 
 type Page = 'optimise' | 'stats' | 'settings'
+
+const PAGES: { id: Page; label: string }[] = [
+  { id: 'optimise', label: 'Optimise' },
+  { id: 'stats', label: 'Stats' },
+  { id: 'settings', label: 'Settings' }
+]
 
 function App(): React.JSX.Element {
   const [page, setPage] = useState<Page>('optimise')
@@ -33,20 +40,30 @@ function App(): React.JSX.Element {
   return (
     <div className="app">
       <header className="header">
-        <div className="brand">
-          <h1>Space Pixl</h1>
-          <span className="version">v{appVersion || '…'}</span>
+        <div className="header-left">
+          <div className="brand">
+            <Logo />
+            <h1 className="brand-name">Space Pixl</h1>
+            <span className="version">v{appVersion || '…'}</span>
+          </div>
+          <nav className="tabs" aria-label="Sections">
+            {PAGES.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className={`tab ${page === p.id ? 'on' : ''}`}
+                onClick={() => setPage(p.id)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </nav>
         </div>
-        <nav className="tabs">
-          {(['optimise', 'stats', 'settings'] as Page[]).map((p) => (
-            <button key={p} className={page === p ? 'active' : ''} onClick={() => setPage(p)}>
-              {p}
-            </button>
-          ))}
-        </nav>
-        <span className={`badge ${el.tone}`} title={engine?.reason}>
-          {el.text}
-        </span>
+        <div className={`status ${el.tone}`} title={engine?.reason}>
+          <Dot tone={engine ? el.tone : 'idle'} />
+          <span>{el.text}</span>
+          {el.version && <span className="mono">v{el.version}</span>}
+        </div>
       </header>
 
       {engine?.status === 'ready' && engine.flavour === 'mock' && (
@@ -62,11 +79,26 @@ function App(): React.JSX.Element {
         <div className="banner err">The engine crashed: {engine.reason}</div>
       )}
 
-      <div style={{ display: page === 'optimise' ? 'block' : 'none' }}>
+      <div
+        style={{
+          display: page === 'optimise' ? 'flex' : 'none',
+          flexDirection: 'column',
+          flexGrow: 1,
+          minHeight: 0
+        }}
+      >
         <Optimise engine={engine} cpus={cpus} />
       </div>
       {page === 'stats' && <Stats active />}
-      {page === 'settings' && <Settings engine={engine} updates={updates} onUpdates={setUpdates} />}
+      {page === 'settings' && (
+        <Settings
+          engine={engine}
+          updates={updates}
+          onUpdates={setUpdates}
+          cpus={cpus}
+          appVersion={appVersion}
+        />
+      )}
     </div>
   )
 }

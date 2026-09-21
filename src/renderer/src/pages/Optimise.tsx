@@ -12,7 +12,7 @@ import { AnalysisPanel } from '../components/AnalysisPanel'
 import { RecommendationPanel } from '../components/RecommendationPanel'
 import { DialsPanel } from '../components/DialsPanel'
 import { PreviewPanel } from '../components/PreviewPanel'
-import { Chip } from '../components/ui'
+import { Chip, IconDownload, IconImage, IconWave, Info, Pill } from '../components/ui'
 import { errorText } from '../lib/labels'
 
 const PREVIEW_DEBOUNCE_MS = 450
@@ -34,6 +34,8 @@ export function Optimise({
   const [converting, setConverting] = useState(false)
   const [conversion, setConversion] = useState<Conversion | null>(null)
   const [convertError, setConvertError] = useState<AppError | null>(null)
+  const [dialsOpen, setDialsOpen] = useState(false)
+  const [analysisOpen, setAnalysisOpen] = useState(false)
   const previewSeq = useRef(0)
 
   const ready = engine?.status === 'ready'
@@ -97,80 +99,121 @@ export function Optimise({
     }
   }
 
+  const lossless = planIsLossless(plan)
+  const reversible = planIsReversible(plan)
+  const megapixels = inspection
+    ? ((inspection.info.width * inspection.info.height) / 1e6).toFixed(1)
+    : null
+
   return (
-    <div className="optimise">
-      <section className="card">
-        <div className="row">
+    <div className="page">
+      <div className="strip rise">
+        <button
+          type="button"
+          className={inspection ? 'btn2 lg' : 'btn'}
+          onClick={() => void pick()}
+          disabled={!ready || inspecting || converting}
+        >
+          {inspecting ? 'Analysing…' : inspection ? 'Choose another image…' : 'Choose an image…'}
+        </button>
+        {inspection ? (
+          <div className="file">
+            <IconImage />
+            <span className="name">{inspection.fileName}</span>
+            <span className="divider" />
+            <span className="fact-inline">{formatBytes(inspection.info.bytes)}</span>
+            <span className="fact-inline">
+              {inspection.info.width} × {inspection.info.height}
+            </span>
+            <span className="fact-inline">{megapixels} MP</span>
+            <Pill>analysed in {formatMs(inspection.ms)}</Pill>
+            <button
+              type="button"
+              className="link"
+              onClick={() => void window.spacePixl.files.reveal(inspection.path)}
+            >
+              reveal
+            </button>
+          </div>
+        ) : (
+          <div className="file">
+            {!ready && <span className="note">{engine?.reason ?? 'The engine is starting.'}</span>}
+          </div>
+        )}
+        {inspection && (
           <button
-            className="primary"
-            onClick={() => void pick()}
-            disabled={!ready || inspecting || converting}
+            type="button"
+            className={`btn2 ${analysisOpen ? 'on' : ''}`}
+            onClick={() => setAnalysisOpen((o) => !o)}
+            aria-expanded={analysisOpen}
           >
-            {inspecting ? 'Analysing…' : inspection ? 'Choose another image…' : 'Choose an image…'}
+            <IconWave />
+            {analysisOpen ? 'Hide analysis' : 'Show analysis'}
           </button>
-          {inspection && (
-            <>
-              <span className="mono">{inspection.fileName}</span>
-              <span className="muted small">
-                {formatBytes(inspection.info.bytes)} · analysed in {formatMs(inspection.ms)}
-              </span>
-              <button
-                className="link"
-                onClick={() => void window.spacePixl.files.reveal(inspection.path)}
-              >
-                reveal
-              </button>
-            </>
-          )}
-          {!ready && (
-            <span className="muted small">{engine?.reason ?? 'The engine is starting.'}</span>
-          )}
-        </div>
-        {inspectError && <pre className="error">{errorText(inspectError)}</pre>}
-      </section>
+        )}
+      </div>
+      {inspectError && <pre className="error">{errorText(inspectError)}</pre>}
 
       {inspection && (
-        <div className="columns">
-          <div className="column">
+        <div className="split-grid" key={inspection.path}>
+          <div className="col scroll">
             <RecommendationPanel
               recommendation={inspection.recommendation}
               bytes={inspection.info.bytes}
               current={plan}
               onChoose={setPlan}
             />
-            <DialsPanel plan={plan} info={inspection.info} cpus={cpus} onChange={setPlan} />
-            <AnalysisPanel inspection={inspection} />
+            <DialsPanel
+              plan={plan}
+              info={inspection.info}
+              cpus={cpus}
+              onChange={setPlan}
+              open={dialsOpen}
+              onToggle={() => setDialsOpen((o) => !o)}
+            />
+            {analysisOpen && <AnalysisPanel inspection={inspection} />}
           </div>
-          <div className="column sticky">
+
+          <div className="col scroll">
             <PreviewPanel
               inspection={inspection}
               preview={preview}
               previewing={previewing}
               previewError={previewError}
             />
-            <section className="card">
-              <h2>Convert</h2>
-              <div className="row">
-                <span className="small">
-                  {describePlan(plan)}{' '}
-                  <Chip tone={planIsLossless(plan) ? 'ok' : 'warn'}>
-                    {planIsReversible(plan)
-                      ? 'reversible'
-                      : planIsLossless(plan)
-                        ? 'lossless'
-                        : 'lossy'}
-                  </Chip>
-                </span>
+
+            <section className="card rise d3">
+              <div className="card-head">
+                <div className="lead">
+                  <h2 className="title">Convert</h2>
+                  <span className="mono small muted">{describePlan(plan)}</span>
+                  <Pill tone={lossless ? 'ok' : ''}>
+                    {reversible ? 'reversible' : lossless ? 'lossless' : 'lossy'}
+                  </Pill>
+                </div>
+                <Info title="What happens when you convert" label="What happens when you convert">
+                  <p>
+                    The new file is written next to the original with the same name and a new
+                    extension. Your original is never touched, moved or overwritten — delete it
+                    yourself once you are happy with the result.
+                  </p>
+                  <p>
+                    The preview above is a real encode with these exact dials, so the size you see
+                    there is the size you will get.
+                  </p>
+                </Info>
               </div>
-              <div className="row">
+              <div className="row" style={{ gap: 16 }}>
                 <button
-                  className="primary"
+                  type="button"
+                  className="btn lg"
                   onClick={() => void convert()}
                   disabled={!ready || converting || previewing || !preview}
                 >
+                  <IconDownload />
                   {converting ? 'Converting…' : 'Convert beside the original'}
                 </button>
-                <span className="muted small">The original is never touched.</span>
+                <span className="note">The original is never touched.</span>
               </div>
               {convertError && <pre className="error">{errorText(convertError)}</pre>}
               {conversion && (
@@ -181,12 +224,13 @@ export function Optimise({
                         ? `saved ${formatBytes(conversion.savedBytes)} (${formatPercent(savingFraction(conversion.inputBytes, conversion.outputBytes), 1)})`
                         : `grew by ${formatBytes(-conversion.savedBytes)}`}
                     </Chip>
-                    <span className="muted small">{formatMs(conversion.ms)}</span>
+                    <Chip>{formatMs(conversion.ms)}</Chip>
                     {conversion.engine === 'mock' && <Chip tone="warn">placeholder estimate</Chip>}
                   </div>
                   <div className="row">
-                    <span className="mono small">{conversion.outputPath}</span>
+                    <span className="path">{conversion.outputPath}</span>
                     <button
+                      type="button"
                       className="link"
                       onClick={() => void window.spacePixl.files.reveal(conversion.outputPath)}
                     >
@@ -201,13 +245,14 @@ export function Optimise({
       )}
 
       {!inspection && !inspecting && (
-        <section className="card empty">
-          <p>
+        <section className="card empty rise d1">
+          <span className="label">Start here</span>
+          <p className="lede">
             Pick an image. Space Pixl will probe the file, measure its pixels, work out how it was
             encoded, and recommend a conversion — then show you the real result before writing
             anything.
           </p>
-          <p className="muted small">
+          <p className="note">
             Reads JPEG, PNG, HEIC, AVIF, JPEG XL, TIFF, WebP and camera RAW. Writes JPEG XL, AVIF,
             WebP, JPEG, PNG, TIFF and DNG.
           </p>

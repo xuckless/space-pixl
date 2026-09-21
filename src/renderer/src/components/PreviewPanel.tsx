@@ -3,9 +3,15 @@ import type { AppError, Inspection, Preview } from '../../../shared/ipc'
 import { formatBytes, formatMs, formatPercent, savingFraction } from '../../../shared/format'
 import { useObjectUrl } from '../lib/useObjectUrl'
 import { errorText } from '../lib/labels'
-import { Chip } from './ui'
+import { Chip, IconArrow, IconCheck, Info, Pill } from './ui'
 
-type Mode = 'after' | 'before' | 'split'
+type Mode = 'before' | 'split' | 'after'
+
+const MODES: { id: Mode; label: string }[] = [
+  { id: 'before', label: 'Before' },
+  { id: 'split', label: 'Split' },
+  { id: 'after', label: 'After' }
+]
 
 export function PreviewPanel({
   inspection,
@@ -25,31 +31,66 @@ export function PreviewPanel({
   const afterUrl = useObjectUrl(preview?.after ?? null)
   const saved = preview ? savingFraction(preview.inputBytes, preview.outputBytes) : null
   const mock = preview?.engine === 'mock' || inspection.engine === 'mock'
+  const substitute = Boolean(inspection.before?.substitute || preview?.after?.substitute)
+  const ratio =
+    inspection.before && inspection.before.width > 0 && inspection.before.height > 0
+      ? `${inspection.before.width} / ${inspection.before.height}`
+      : '3 / 2'
+  const splitPos = mode === 'before' ? 100 : mode === 'after' ? 0 : split
+  const savePct = saved === null ? 0 : Math.max(0, Math.min(1, saved)) * 100
+  const growPct = saved === null ? 0 : Math.max(0, Math.min(1, -saved)) * 100
 
   return (
-    <section className="card preview">
-      <h2>Preview</h2>
-      <div className="row">
-        <div className="segmented">
-          {(['before', 'split', 'after'] as Mode[]).map((m) => (
-            <button key={m} className={mode === m ? 'active' : ''} onClick={() => setMode(m)}>
-              {m}
+    <section className="card rise d2">
+      <div className="card-head">
+        <h2 className="title">Preview</h2>
+        <div className="tools" style={{ gap: 10 }}>
+          {previewing && <Pill tone="ac">encoding…</Pill>}
+          <div className="seggroup" role="group" aria-label="Compare">
+            {MODES.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                className={`seg ${mode === m.id ? 'on' : ''}`}
+                onClick={() => setMode(m.id)}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+          <div className="seggroup" role="group" aria-label="Zoom">
+            <button
+              type="button"
+              className={`seg ${zoom === 'fit' ? 'on' : ''}`}
+              onClick={() => setZoom('fit')}
+            >
+              Fit
             </button>
-          ))}
+            <button
+              type="button"
+              className={`seg ${zoom === '100' ? 'on' : ''}`}
+              onClick={() => setZoom('100')}
+            >
+              1:1
+            </button>
+          </div>
+          <Info title="Reading the preview" label="About the preview">
+            <p>
+              Left of the line is your original, right of it is what the conversion would produce.
+              Drag the slider to compare, or switch to Before and After to see each on its own.
+            </p>
+            {substitute && !mock && (
+              <p>The preview is a fit-to-screen 8-bit render; judge fine detail at 1:1.</p>
+            )}
+            <p>
+              For a lossless target the two sides are identical by definition — the &quot;bit-exact
+              copy&quot; tag below is the real check.
+            </p>
+          </Info>
         </div>
-        <div className="segmented">
-          <button className={zoom === 'fit' ? 'active' : ''} onClick={() => setZoom('fit')}>
-            fit
-          </button>
-          <button className={zoom === '100' ? 'active' : ''} onClick={() => setZoom('100')}>
-            1:1
-          </button>
-        </div>
-        <span className="spacer" />
-        {previewing && <Chip tone="warn">encoding…</Chip>}
       </div>
 
-      <div className={`stage ${zoom === '100' ? 'zoom' : ''}`}>
+      <div className={`stage ${zoom === '100' ? 'zoom' : ''}`} style={{ aspectRatio: ratio }}>
         {beforeUrl && (mode !== 'after' || !afterUrl) && (
           <img className="layer" src={beforeUrl} alt="source" draggable={false} />
         )}
@@ -62,59 +103,73 @@ export function PreviewPanel({
             style={mode === 'split' ? { clipPath: `inset(0 0 0 ${split}%)` } : undefined}
           />
         )}
-        {mode === 'split' && afterUrl && (
-          <div className="split-line" style={{ left: `${split}%` }} />
+        {previewing && <span className="shimmer" />}
+        {mode === 'split' && afterUrl && zoom === 'fit' && (
+          <>
+            <div className="handle" style={{ left: `${split}%` }} />
+            <span className="tag l">BEFORE · {formatBytes(inspection.info.bytes)}</span>
+            {preview && <span className="tag r">AFTER · {formatBytes(preview.outputBytes)}</span>}
+          </>
+        )}
+        {mode === 'split' && afterUrl && zoom === '100' && (
+          <div className="handle" style={{ left: `${split}%` }} />
         )}
         {!beforeUrl && !afterUrl && (
-          <div className="muted stage-empty">
+          <div className="stage-empty note">
             {inspection.beforeError ? errorText(inspection.beforeError) : 'No render.'}
           </div>
         )}
       </div>
-      {mode === 'split' && (
-        <input
-          className="split-range"
-          type="range"
-          min={0}
-          max={100}
-          value={split}
-          onChange={(e) => setSplit(Number(e.target.value))}
-        />
-      )}
+      <input
+        type="range"
+        min={0}
+        max={100}
+        value={splitPos}
+        disabled={!afterUrl}
+        aria-label="Split position"
+        style={{ '--p': `${splitPos}%` } as React.CSSProperties}
+        onChange={(e) => {
+          setSplit(Number(e.target.value))
+          setMode('split')
+        }}
+      />
+
       {mock && (
-        <p className="warn small">
+        <p className="note warn">
           Placeholder engine: sizes are estimates from the reference measurements and the
           &quot;after&quot; image is the source, not an encode.
         </p>
       )}
-      {(inspection.before?.substitute || preview?.after?.substitute) && !mock && (
-        <p className="muted small">
-          The preview is a fit-to-screen 8-bit render; judge fine detail at 1:1.
-        </p>
-      )}
-
       {previewError && <pre className="error">{errorText(previewError)}</pre>}
       {preview?.afterError && (
         <pre className="error">could not render the output: {errorText(preview.afterError)}</pre>
       )}
 
       {preview && (
-        <>
+        <div className="result">
           <div className="sizes">
-            <span>{formatBytes(preview.inputBytes)}</span>
-            <span className="muted">→</span>
-            <strong>{formatBytes(preview.outputBytes)}</strong>
-            <Chip tone={saved !== null && saved > 0 ? 'ok' : 'err'}>
-              {saved !== null && saved >= 0
-                ? `saves ${formatPercent(saved, 1)}`
-                : `grows ${formatPercent(-(saved ?? 0), 1)}`}
-            </Chip>
-            <span className="muted small">
+            <div className="lead">
+              <span className="in">{formatBytes(preview.inputBytes)}</span>
+              <IconArrow />
+              <span className="out">{formatBytes(preview.outputBytes)}</span>
+              <Pill tone={saved !== null && saved > 0 ? 'ok' : 'err'} lg>
+                {saved !== null && saved >= 0
+                  ? `−${formatPercent(saved, 1)}`
+                  : `+${formatPercent(-(saved ?? 0), 1)}`}
+              </Pill>
+            </div>
+            <span className="spec">
               {formatMs(preview.ms)} total · encode {formatMs(preview.report.encode_ms)}
             </span>
           </div>
-          <div className="row report">
+          <div className="ratio" aria-hidden="true">
+            <div className="keep" style={{ width: `${100 - savePct}%` }} />
+            {savePct > 0 && <div className="save" style={{ width: `${savePct}%` }} />}
+            {growPct > 0 && <div className="save err" style={{ width: `${growPct}%` }} />}
+          </div>
+          <div className="row" style={{ gap: 8 }}>
             <Chip tone={preview.report.loss.quantisations === 0 ? 'ok' : ''}>
+              {preview.report.loss.quantisations === 0 && <IconCheck />}
               {preview.report.loss.quantisations === 0
                 ? 'bit-exact copy'
                 : `${preview.report.loss.quantisations} rounding${preview.report.loss.quantisations === 1 ? '' : 's'}`}
@@ -134,8 +189,9 @@ export function PreviewPanel({
               <Chip>tone mapped {preview.report.color.tone_mapped.operator}</Chip>
             )}
             <Chip>
-              {preview.report.color.space} {preview.report.color.icc_written ? '· ICC' : ''}{' '}
-              {preview.report.color.cicp_written ? '· CICP' : ''}
+              {preview.report.color.space}
+              {preview.report.color.icc_written ? ' · ICC' : ''}
+              {preview.report.color.cicp_written ? ' · CICP' : ''}
             </Chip>
             <Chip>
               metadata:{' '}
@@ -148,7 +204,7 @@ export function PreviewPanel({
               {preview.report.depth === 'Eight' ? 8 : 16}-bit
             </Chip>
           </div>
-        </>
+        </div>
       )}
     </section>
   )

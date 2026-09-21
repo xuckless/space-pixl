@@ -3,12 +3,13 @@ import {
   TARGETS,
   targetsFor,
   chromaLabel,
+  describePlan,
   metadataFor,
   subsamplingLabel,
   type Plan,
   type TargetFormat
 } from '../../../shared/plan'
-import { Field, Select, Slider, Toggle } from './ui'
+import { Collapsible, Field, GroupHead, IconSliders, Info, Select, Slider, Toggle } from './ui'
 
 type Mutate = (fn: (p: Plan) => void) => void
 
@@ -25,23 +26,27 @@ function EncoderDials({ plan, mutate }: { plan: Plan; mutate: Mutate }): React.J
   switch (plan.target) {
     case 'jxl-repack':
       return (
-        <Field label="Effort" hint="1 fast – 9 smallest; 7 is the sweet spot, 9 is a trap">
-          <Slider
-            value={plan.jxlRepack.effort}
-            min={1}
-            max={9}
-            onChange={(v) => mutate((p) => (p.jxlRepack.effort = v))}
-          />
-        </Field>
+        <div className="form">
+          <Field label="Effort" hint="1 fast – 9 smallest; 7 is the sweet spot, 9 is a trap">
+            <Slider
+              label="Effort"
+              value={plan.jxlRepack.effort}
+              min={1}
+              max={9}
+              onChange={(v) => mutate((p) => (p.jxlRepack.effort = v))}
+            />
+          </Field>
+        </div>
       )
     case 'jxl-lossy':
       return (
-        <>
+        <div className="form">
           <Field
             label="Distance"
             hint="butteraugli: 0 lossless · 1 visually lossless · higher smaller"
           >
             <Slider
+              label="Distance"
               value={plan.jxlLossy.distance}
               min={0}
               max={25}
@@ -51,56 +56,65 @@ function EncoderDials({ plan, mutate }: { plan: Plan; mutate: Mutate }): React.J
           </Field>
           <Field label="Effort" hint="1 fast – 9 smallest">
             <Slider
+              label="Effort"
               value={plan.jxlLossy.effort}
               min={1}
               max={9}
               onChange={(v) => mutate((p) => (p.jxlLossy.effort = v))}
             />
           </Field>
-        </>
+        </div>
       )
     case 'jxl-lossless':
       return (
-        <Field label="Effort" hint="1 fast – 9 smallest">
-          <Slider
-            value={plan.jxlLossless.effort}
-            min={1}
-            max={9}
-            onChange={(v) => mutate((p) => (p.jxlLossless.effort = v))}
-          />
-        </Field>
+        <div className="form">
+          <Field label="Effort" hint="1 fast – 9 smallest">
+            <Slider
+              label="Effort"
+              value={plan.jxlLossless.effort}
+              min={1}
+              max={9}
+              onChange={(v) => mutate((p) => (p.jxlLossless.effort = v))}
+            />
+          </Field>
+        </div>
       )
     case 'jpeg':
       return (
         <>
-          <Field label="Quality" hint="1–100">
-            <Slider
-              value={plan.jpeg.quality}
-              min={1}
-              max={100}
-              onChange={(v) => mutate((p) => (p.jpeg.quality = v))}
+          <div className="form">
+            <Field label="Quality" hint="1–100">
+              <Slider
+                label="Quality"
+                value={plan.jpeg.quality}
+                min={1}
+                max={100}
+                onChange={(v) => mutate((p) => (p.jpeg.quality = v))}
+              />
+            </Field>
+            <Field label="Chroma">
+              <Select
+                value={plan.jpeg.subsampling}
+                options={(['None', 'Half', 'Quarter', 'Grey'] as const).map((s) => ({
+                  value: s,
+                  label: subsamplingLabel(s)
+                }))}
+                onChange={(v) => mutate((p) => (p.jpeg.subsampling = v))}
+              />
+            </Field>
+          </div>
+          <div className="checks">
+            <Toggle
+              label="Optimise Huffman tables (smaller, same pixels)"
+              checked={plan.jpeg.optimize}
+              onChange={(v) => mutate((p) => (p.jpeg.optimize = v))}
             />
-          </Field>
-          <Field label="Chroma subsampling">
-            <Select
-              value={plan.jpeg.subsampling}
-              options={(['None', 'Half', 'Quarter', 'Grey'] as const).map((s) => ({
-                value: s,
-                label: subsamplingLabel(s)
-              }))}
-              onChange={(v) => mutate((p) => (p.jpeg.subsampling = v))}
-            />
-          </Field>
-          <Toggle
-            label="Optimise Huffman tables (smaller, same pixels)"
-            checked={plan.jpeg.optimize}
-            onChange={(v) => mutate((p) => (p.jpeg.optimize = v))}
-          />
+          </div>
         </>
       )
     case 'png':
       return (
-        <>
+        <div className="form">
           <Field label="Compression">
             <Select
               value={plan.png.compression}
@@ -117,176 +131,205 @@ function EncoderDials({ plan, mutate }: { plan: Plan; mutate: Mutate }): React.J
               onChange={(v) => mutate((p) => (p.png.filter = v))}
             />
           </Field>
-        </>
+        </div>
       )
     case 'avif':
       return (
         <>
-          <Toggle
-            label="Lossless"
-            checked={plan.avif.lossless}
-            onChange={(v) => mutate((p) => (p.avif.lossless = v))}
-          />
-          <Field label="Quality" hint="1–100">
-            <Slider
-              value={plan.avif.quality}
-              min={1}
-              max={100}
-              disabled={plan.avif.lossless}
-              onChange={(v) => mutate((p) => (p.avif.quality = v))}
+          <div className="checks">
+            <Toggle
+              label="Lossless"
+              checked={plan.avif.lossless}
+              onChange={(v) => mutate((p) => (p.avif.lossless = v))}
             />
-          </Field>
-          <Field label="Speed" hint="0 slowest and smallest – 10 fastest">
-            <Slider
-              value={plan.avif.speed}
-              min={0}
-              max={10}
-              onChange={(v) => mutate((p) => (p.avif.speed = v))}
-            />
-          </Field>
-          <Field label="Bit depth">
-            <Select
-              value={String(plan.avif.bitDepth)}
-              options={bitDepths}
-              onChange={(v) => mutate((p) => (p.avif.bitDepth = Number(v) as 8 | 10 | 12))}
-            />
-          </Field>
-          <Field label="Chroma" hint="lossless forces 4:4:4">
-            <Select
-              value={plan.avif.chroma}
-              options={chromas}
-              disabled={plan.avif.lossless}
-              onChange={(v) => mutate((p) => (p.avif.chroma = v))}
-            />
-          </Field>
+          </div>
+          <div className="form">
+            <Field label="Quality" hint="1–100">
+              <Slider
+                label="Quality"
+                value={plan.avif.quality}
+                min={1}
+                max={100}
+                disabled={plan.avif.lossless}
+                onChange={(v) => mutate((p) => (p.avif.quality = v))}
+              />
+            </Field>
+            <Field label="Speed" hint="0 slowest and smallest – 10 fastest">
+              <Slider
+                label="Speed"
+                value={plan.avif.speed}
+                min={0}
+                max={10}
+                onChange={(v) => mutate((p) => (p.avif.speed = v))}
+              />
+            </Field>
+            <Field label="Bit depth">
+              <Select
+                value={String(plan.avif.bitDepth)}
+                options={bitDepths}
+                onChange={(v) => mutate((p) => (p.avif.bitDepth = Number(v) as 8 | 10 | 12))}
+              />
+            </Field>
+            <Field label="Chroma" hint="lossless forces 4:4:4">
+              <Select
+                value={plan.avif.chroma}
+                options={chromas}
+                disabled={plan.avif.lossless}
+                onChange={(v) => mutate((p) => (p.avif.chroma = v))}
+              />
+            </Field>
+          </div>
         </>
       )
     case 'heic':
       return (
         <>
-          <Toggle
-            label="Lossless"
-            checked={plan.heic.lossless}
-            onChange={(v) => mutate((p) => (p.heic.lossless = v))}
-          />
-          <Field label="Quality">
-            <Slider
-              value={plan.heic.quality}
-              min={1}
-              max={100}
-              disabled={plan.heic.lossless}
-              onChange={(v) => mutate((p) => (p.heic.quality = v))}
+          <div className="checks">
+            <Toggle
+              label="Lossless"
+              checked={plan.heic.lossless}
+              onChange={(v) => mutate((p) => (p.heic.lossless = v))}
             />
-          </Field>
-          <Field label="Bit depth">
-            <Select
-              value={String(plan.heic.bitDepth)}
-              options={bitDepths}
-              onChange={(v) => mutate((p) => (p.heic.bitDepth = Number(v) as 8 | 10 | 12))}
-            />
-          </Field>
-          <Field label="Chroma">
-            <Select
-              value={plan.heic.chroma}
-              options={chromas}
-              disabled={plan.heic.lossless}
-              onChange={(v) => mutate((p) => (p.heic.chroma = v))}
-            />
-          </Field>
+          </div>
+          <div className="form">
+            <Field label="Quality">
+              <Slider
+                label="Quality"
+                value={plan.heic.quality}
+                min={1}
+                max={100}
+                disabled={plan.heic.lossless}
+                onChange={(v) => mutate((p) => (p.heic.quality = v))}
+              />
+            </Field>
+            <Field label="Bit depth">
+              <Select
+                value={String(plan.heic.bitDepth)}
+                options={bitDepths}
+                onChange={(v) => mutate((p) => (p.heic.bitDepth = Number(v) as 8 | 10 | 12))}
+              />
+            </Field>
+            <Field label="Chroma">
+              <Select
+                value={plan.heic.chroma}
+                options={chromas}
+                disabled={plan.heic.lossless}
+                onChange={(v) => mutate((p) => (p.heic.chroma = v))}
+              />
+            </Field>
+          </div>
         </>
       )
     case 'webp':
       return (
         <>
-          <Toggle
-            label="Lossless"
-            checked={plan.webp.lossless}
-            onChange={(v) => mutate((p) => (p.webp.lossless = v))}
-          />
-          <Field label="Quality">
-            <Slider
-              value={plan.webp.quality}
-              min={1}
-              max={100}
-              disabled={plan.webp.lossless}
-              onChange={(v) => mutate((p) => (p.webp.quality = v))}
+          <div className="checks">
+            <Toggle
+              label="Lossless"
+              checked={plan.webp.lossless}
+              onChange={(v) => mutate((p) => (p.webp.lossless = v))}
             />
-          </Field>
-          <Field label="Method" hint="0 fastest – 6 smallest">
-            <Slider
-              value={plan.webp.method}
-              min={0}
-              max={6}
-              onChange={(v) => mutate((p) => (p.webp.method = v))}
-            />
-          </Field>
+          </div>
+          <div className="form">
+            <Field label="Quality">
+              <Slider
+                label="Quality"
+                value={plan.webp.quality}
+                min={1}
+                max={100}
+                disabled={plan.webp.lossless}
+                onChange={(v) => mutate((p) => (p.webp.quality = v))}
+              />
+            </Field>
+            <Field label="Method" hint="0 fastest – 6 smallest">
+              <Slider
+                label="Method"
+                value={plan.webp.method}
+                min={0}
+                max={6}
+                onChange={(v) => mutate((p) => (p.webp.method = v))}
+              />
+            </Field>
+          </div>
         </>
       )
     case 'tiff':
       return (
-        <Field label="Compression" hint="all lossless">
-          <Select
-            value={plan.tiff.compression}
-            options={(['Deflate', 'Lzw', 'None'] as const).map((s) => ({ value: s, label: s }))}
-            onChange={(v) => mutate((p) => (p.tiff.compression = v))}
-          />
-        </Field>
+        <div className="form">
+          <Field label="Compression" hint="all lossless">
+            <Select
+              value={plan.tiff.compression}
+              options={(['Deflate', 'Lzw', 'None'] as const).map((s) => ({ value: s, label: s }))}
+              onChange={(v) => mutate((p) => (p.tiff.compression = v))}
+            />
+          </Field>
+        </div>
       )
     case 'dng':
       return (
         <>
-          <Field label="Compression">
-            <Select
-              value={plan.dng.compression}
-              options={(['Lossless', 'Uncompressed'] as const).map((s) => ({
-                value: s,
-                label: s === 'Lossless' ? 'Lossless JPEG-92' : s
-              }))}
-              onChange={(v) => mutate((p) => (p.dng.compression = v))}
+          <div className="form">
+            <Field label="Compression">
+              <Select
+                value={plan.dng.compression}
+                options={(['Lossless', 'Uncompressed'] as const).map((s) => ({
+                  value: s,
+                  label: s === 'Lossless' ? 'Lossless JPEG-92' : s
+                }))}
+                onChange={(v) => mutate((p) => (p.dng.compression = v))}
+              />
+            </Field>
+            <Field label="Crop">
+              <Select
+                value={plan.dng.crop}
+                options={(['Best', 'ActiveArea', 'None'] as const).map((s) => ({
+                  value: s,
+                  label: s
+                }))}
+                onChange={(v) => mutate((p) => (p.dng.crop = v))}
+              />
+            </Field>
+          </div>
+          <div className="checks">
+            <Toggle
+              label="Embed the original RAW (larger than the original)"
+              checked={plan.dng.embedOriginal}
+              onChange={(v) => mutate((p) => (p.dng.embedOriginal = v))}
             />
-          </Field>
-          <Field label="Crop">
-            <Select
-              value={plan.dng.crop}
-              options={(['Best', 'ActiveArea', 'None'] as const).map((s) => ({
-                value: s,
-                label: s
-              }))}
-              onChange={(v) => mutate((p) => (p.dng.crop = v))}
+            <Toggle
+              label="Write a preview"
+              checked={plan.dng.preview}
+              onChange={(v) => mutate((p) => (p.dng.preview = v))}
             />
-          </Field>
-          <Toggle
-            label="Embed the original RAW file (larger than the original)"
-            checked={plan.dng.embedOriginal}
-            onChange={(v) => mutate((p) => (p.dng.embedOriginal = v))}
-          />
-          <Toggle
-            label="Write a preview"
-            checked={plan.dng.preview}
-            onChange={(v) => mutate((p) => (p.dng.preview = v))}
-          />
-          <Toggle
-            label="Write a thumbnail"
-            checked={plan.dng.thumbnail}
-            onChange={(v) => mutate((p) => (p.dng.thumbnail = v))}
-          />
-          <Toggle
-            label="Scale black/white levels to full range"
-            checked={plan.dng.applyScaling}
-            onChange={(v) => mutate((p) => (p.dng.applyScaling = v))}
-          />
-          <Field label="Predictor" hint="1–7; 1 is safe for Bayer data">
-            <Slider
-              value={plan.dng.predictor}
-              min={1}
-              max={7}
-              onChange={(v) => mutate((p) => (p.dng.predictor = v))}
+            <Toggle
+              label="Write a thumbnail"
+              checked={plan.dng.thumbnail}
+              onChange={(v) => mutate((p) => (p.dng.thumbnail = v))}
             />
-          </Field>
+            <Toggle
+              label="Scale black/white levels to full range"
+              checked={plan.dng.applyScaling}
+              onChange={(v) => mutate((p) => (p.dng.applyScaling = v))}
+            />
+          </div>
+          <div className="form">
+            <Field
+              label="Predictor"
+              hint="Runs from 1 to 7. Stick with 1 for Bayer sensor data — it is the one that is guaranteed safe."
+            >
+              <Slider
+                label="Predictor"
+                value={plan.dng.predictor}
+                min={1}
+                max={7}
+                onChange={(v) => mutate((p) => (p.dng.predictor = v))}
+              />
+            </Field>
+          </div>
         </>
       )
     case 'jpeg-from-jxl':
-      return <p className="muted small">No knobs: the original JPEG is restored byte for byte.</p>
+      return <p className="note">No knobs: the original JPEG is restored byte for byte.</p>
   }
 }
 
@@ -294,12 +337,16 @@ export function DialsPanel({
   plan,
   info,
   cpus,
-  onChange
+  onChange,
+  open,
+  onToggle
 }: {
   plan: Plan
   info: SourceInfo
   cpus: number
   onChange: (p: Plan) => void
+  open: boolean
+  onToggle: () => void
 }): React.JSX.Element {
   const mutate: Mutate = (fn) => {
     const next = structuredClone(plan)
@@ -346,355 +393,445 @@ export function DialsPanel({
   ).map((s) => ({ value: s, label: s.replace(/([A-Z])/g, ' $1').trim() }))
   const showRaw = info.input === 'Raw' && plan.target !== 'dng'
   const sdrTarget = !target.hdrCapable
-  // The metadata that will actually be written. The switches show that, not
-  // the raw dial state: a kind the file does not carry (or the target cannot
-  // hold) is locked off, and a target that fixes the whole policy locks all.
+  // The metadata that will actually be written. A DNG fixes the whole policy;
+  // a RAW source has nothing but EXIF to copy, so the other switches are
+  // locked off rather than left as a click that would do nothing.
   const metadata = metadataFor(plan, info)
   const dngTarget = plan.target === 'dng'
-  const fixedPolicy = dngTarget || passthrough
-  const hasColour = info.has_icc || info.has_cicp
-  const metadataKinds: {
-    key: keyof Plan['metadata']
-    label: string
-    plain: string
-    locked: boolean
-  }[] = [
-    {
-      key: 'exif',
-      label: 'EXIF',
-      plain: 'camera and shot details',
-      locked: fixedPolicy || !info.has_exif
-    },
-    { key: 'icc', label: 'ICC / CICP', plain: 'colour description', locked: fixedPolicy },
-    {
-      key: 'xmp',
-      label: 'XMP',
-      plain: 'edits, keywords and ratings',
-      locked: fixedPolicy || !info.has_xmp
-    },
-    {
-      key: 'iptc',
-      label: 'IPTC',
-      plain: 'captions and credits',
-      locked: fixedPolicy || !info.has_iptc || !target.carriesIptc
-    }
-  ]
-  const copied = metadataKinds.filter((k) => k.key !== 'icc')
-  const carried = copied.filter((k) => info[`has_${k.key}`])
-  const missing = copied.length - carried.length
-  const list = (xs: string[]): string =>
-    xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`
-  const colourNote = hasColour
-    ? `Its ${info.has_icc ? 'colour profile' : 'colour code points'} travel with it.`
-    : plan.color.policy === 'Preserve'
-      ? `It states no colour space, so the output is tagged as ${info.color} (assumed).`
-      : 'The colour conversion tags the output with the space you chose.'
+  const rawSource = info.input === 'Raw'
+  const metadataLocked = {
+    exif: dngTarget || (rawSource && !info.has_exif),
+    icc: dngTarget || (rawSource && !(info.has_icc || info.has_cicp)),
+    xmp: dngTarget || (rawSource && !info.has_xmp),
+    iptc: dngTarget || (rawSource && !info.has_iptc)
+  }
+  const unused = passthrough ? ' · not used by this target' : ''
 
   return (
-    <section className="card dials">
-      <h2>Dials</h2>
-
-      <h3>Output</h3>
-      <Field label="Format">
-        <Select
-          value={plan.target}
-          options={targetOptions}
-          onChange={(v) => mutate((p) => (p.target = v as TargetFormat))}
-        />
-      </Field>
-      {!target.shipped && (
-        <p className="warn small">
-          HEIC needs an HEVC encoder (x265, GPL), which shipped builds exclude. The engine will
-          refuse with EncoderUnavailable.
-        </p>
-      )}
-      {passthrough && (
-        <p className="muted small">
-          This target copies the bitstream: no pixel is decoded, so resize, pixel, colour and dither
-          do not apply.
-        </p>
-      )}
-      {info.is_hdr && sdrTarget && plan.color.policy !== 'ToneMap' && !passthrough && (
-        <p className="warn small">
-          HDR source into an SDR format: the engine refuses unless Colour is set to Tone map.
-        </p>
-      )}
-      <EncoderDials plan={plan} mutate={mutate} />
-      <Field label="Threads" hint={`this machine has ${cpus}`}>
-        <Slider
-          value={plan.threads}
-          min={1}
-          max={Math.max(1, cpus)}
-          onChange={(v) => mutate((p) => (p.threads = v))}
-        />
-      </Field>
-
-      <h3>Size</h3>
-      <Field label="Resize">
-        <Select
-          value={plan.resize.mode}
-          disabled={passthrough}
-          options={[
-            { value: 'none', label: 'keep' },
-            { value: 'fit', label: 'fit longer edge' },
-            { value: 'scale', label: 'scale by factor' },
-            { value: 'exact', label: 'exact size' }
-          ]}
-          onChange={(v) => mutate((p) => (p.resize.mode = v))}
-        />
-      </Field>
-      {plan.resize.mode === 'fit' && (
-        <Field label="Longer edge, px" hint="never enlarges">
-          <Slider
-            value={plan.resize.fit}
-            min={256}
-            max={16384}
-            step={64}
-            disabled={passthrough}
-            onChange={(v) => mutate((p) => (p.resize.fit = v))}
-          />
-        </Field>
-      )}
-      {plan.resize.mode === 'scale' && (
-        <Field label="Factor">
-          <Slider
-            value={plan.resize.factor}
-            min={0.05}
-            max={4}
-            step={0.05}
-            disabled={passthrough}
-            onChange={(v) => mutate((p) => (p.resize.factor = v))}
-          />
-        </Field>
-      )}
-      {plan.resize.mode === 'exact' && (
-        <div className="row">
-          <Field label="Width">
-            <input
-              type="number"
-              min={1}
-              value={plan.resize.width}
-              disabled={passthrough}
-              onChange={(e) =>
-                mutate((p) => (p.resize.width = Math.max(1, Number(e.target.value) || 1)))
-              }
+    <Collapsible
+      className="rise d6"
+      icon={<IconSliders />}
+      title="Dials"
+      summary={`${describePlan(plan)} · ${plan.threads} thread${plan.threads === 1 ? '' : 's'}`}
+      open={open}
+      onToggle={onToggle}
+    >
+      {/* ── Output ─────────────────────────────────────────────────────── */}
+      <div className="group">
+        <GroupHead
+          info={
+            passthrough ? (
+              <Info title="Why some dials are greyed out" label="About the output target">
+                <p>
+                  This target copies the file&apos;s bitstream as-is, so no pixel is ever decoded.
+                  That is why resize, pixel, colour and dither settings do not apply here — they
+                  only matter once pixels exist.
+                </p>
+              </Info>
+            ) : undefined
+          }
+        >
+          Output
+        </GroupHead>
+        <div className="form">
+          <Field label="Format">
+            <Select
+              value={plan.target}
+              options={targetOptions}
+              onChange={(v) => mutate((p) => (p.target = v as TargetFormat))}
             />
           </Field>
-          <Field label="Height">
-            <input
-              type="number"
+        </div>
+        {!target.shipped && (
+          <p className="note warn">
+            HEIC needs an HEVC encoder (x265, GPL), which shipped builds exclude. The engine will
+            refuse with EncoderUnavailable.
+          </p>
+        )}
+        {info.is_hdr && sdrTarget && plan.color.policy !== 'ToneMap' && !passthrough && (
+          <p className="note warn">
+            HDR source into an SDR format: the engine refuses unless Colour is set to Tone map.
+          </p>
+        )}
+        <EncoderDials plan={plan} mutate={mutate} />
+        <div className="form">
+          <Field
+            label="Threads"
+            hint={`This machine has ${cpus}. Using them all is fastest; dial it down if you want to keep the rest of the computer responsive while a batch runs.`}
+          >
+            <Slider
+              label="Threads"
+              value={plan.threads}
               min={1}
-              value={plan.resize.height}
+              max={Math.max(1, cpus)}
+              onChange={(v) => mutate((p) => (p.threads = v))}
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* ── Size & pixels ──────────────────────────────────────────────── */}
+      <div className={`group ${passthrough ? 'dim' : ''}`}>
+        <GroupHead>Size &amp; pixels{unused}</GroupHead>
+        <div className="form">
+          <Field label="Resize">
+            <Select
+              value={plan.resize.mode}
               disabled={passthrough}
-              onChange={(e) =>
-                mutate((p) => (p.resize.height = Math.max(1, Number(e.target.value) || 1)))
+              options={[
+                { value: 'none', label: 'keep' },
+                { value: 'fit', label: 'fit longer edge' },
+                { value: 'scale', label: 'scale by factor' },
+                { value: 'exact', label: 'exact size' }
+              ]}
+              onChange={(v) => mutate((p) => (p.resize.mode = v))}
+            />
+          </Field>
+          {plan.resize.mode === 'fit' && (
+            <Field label="Longer edge, px" hint="never enlarges">
+              <Slider
+                label="Longer edge"
+                value={plan.resize.fit}
+                min={256}
+                max={16384}
+                step={64}
+                disabled={passthrough}
+                onChange={(v) => mutate((p) => (p.resize.fit = v))}
+              />
+            </Field>
+          )}
+          {plan.resize.mode === 'scale' && (
+            <Field label="Factor">
+              <Slider
+                label="Factor"
+                value={plan.resize.factor}
+                min={0.05}
+                max={4}
+                step={0.05}
+                disabled={passthrough}
+                onChange={(v) => mutate((p) => (p.resize.factor = v))}
+              />
+            </Field>
+          )}
+          {plan.resize.mode === 'exact' && (
+            <>
+              <Field label="Width">
+                <input
+                  type="number"
+                  className="wide"
+                  min={1}
+                  value={plan.resize.width}
+                  disabled={passthrough}
+                  aria-label="Width"
+                  onChange={(e) =>
+                    mutate((p) => (p.resize.width = Math.max(1, Number(e.target.value) || 1)))
+                  }
+                />
+              </Field>
+              <Field label="Height">
+                <input
+                  type="number"
+                  className="wide"
+                  min={1}
+                  value={plan.resize.height}
+                  disabled={passthrough}
+                  aria-label="Height"
+                  onChange={(e) =>
+                    mutate((p) => (p.resize.height = Math.max(1, Number(e.target.value) || 1)))
+                  }
+                />
+              </Field>
+            </>
+          )}
+          {plan.resize.mode !== 'none' && (
+            <Field label="Resampler">
+              <Select
+                value={plan.resampler}
+                disabled={passthrough}
+                options={(['Lanczos3', 'CatmullRom', 'Bilinear', 'Nearest'] as const).map((s) => ({
+                  value: s,
+                  label: s
+                }))}
+                onChange={(v) => mutate((p) => (p.resampler = v))}
+              />
+            </Field>
+          )}
+          <Field label="Depth">
+            <Select
+              value={plan.pixel.depth}
+              options={depthOptions}
+              disabled={passthrough}
+              onChange={(v) => mutate((p) => (p.pixel.depth = v as Plan['pixel']['depth']))}
+            />
+          </Field>
+          <Field label="Channels">
+            <Select
+              value={String(plan.pixel.channels)}
+              options={channelOptions}
+              disabled={passthrough}
+              onChange={(v) =>
+                mutate(
+                  (p) => (p.pixel.channels = v === 'keep' ? 'keep' : (Number(v) as 1 | 2 | 3 | 4))
+                )
               }
             />
           </Field>
         </div>
-      )}
-      {plan.resize.mode !== 'none' && (
-        <>
-          <Field label="Resampler">
-            <Select
-              value={plan.resampler}
+        {plan.resize.mode !== 'none' && (
+          <div className="checks">
+            <Toggle
+              label="Resample in linear light (correct, slower)"
+              checked={plan.linearResample}
               disabled={passthrough}
-              options={(['Lanczos3', 'CatmullRom', 'Bilinear', 'Nearest'] as const).map((s) => ({
-                value: s,
-                label: s
-              }))}
-              onChange={(v) => mutate((p) => (p.resampler = v))}
+              onChange={(v) => mutate((p) => (p.linearResample = v))}
             />
-          </Field>
-          <Toggle
-            label="Resample in linear light (correct, slower)"
-            checked={plan.linearResample}
-            disabled={passthrough}
-            onChange={(v) => mutate((p) => (p.linearResample = v))}
-          />
-        </>
-      )}
-
-      <h3>Pixels</h3>
-      <Field label="Depth">
-        <Select
-          value={plan.pixel.depth}
-          options={depthOptions}
-          disabled={passthrough}
-          onChange={(v) => mutate((p) => (p.pixel.depth = v as Plan['pixel']['depth']))}
-        />
-      </Field>
-      <Field label="Channels">
-        <Select
-          value={String(plan.pixel.channels)}
-          options={channelOptions}
-          disabled={passthrough}
-          onChange={(v) =>
-            mutate((p) => (p.pixel.channels = v === 'keep' ? 'keep' : (Number(v) as 1 | 2 | 3 | 4)))
-          }
-        />
-      </Field>
-
-      <h3>Metadata</h3>
-      <div className="row">
-        {metadataKinds.map((k) => (
-          <Toggle
-            key={k.key}
-            label={k.label}
-            checked={metadata[k.key]}
-            disabled={k.locked}
-            onChange={(v) => mutate((p) => (p.metadata[k.key] = v))}
-          />
-        ))}
+          </div>
+        )}
       </div>
-      {dngTarget ? (
-        <p className="muted small">
-          A DNG keeps the camera&apos;s shot details (EXIF) and nothing else. The format decides
-          this, so there is nothing to choose here.
-        </p>
-      ) : passthrough ? (
-        <p className="muted small">
-          This target copies the file byte for byte, so everything inside comes along unchanged.
-        </p>
-      ) : (
-        <p className="muted small">
-          {carried.length
-            ? `This file carries ${list(carried.map((k) => `${k.label} (${k.plain})`))}. Whatever is on is copied across untouched, never rewritten.`
-            : 'This file carries no EXIF, XMP or IPTC to copy across.'}{' '}
-          {colourNote}
-          {info.has_iptc && !target.carriesIptc
-            ? ` ${target.label} has no place for IPTC, so it is dropped.`
-            : ''}
-          {missing > 0 ? ' Greyed switches have nothing to copy.' : ''}
-        </p>
-      )}
-      {!fixedPolicy && !metadata.icc && (
-        <p className="warn small">
-          With the colour description off, a wide-gamut or HDR photo looks wrong on every screen.
-        </p>
-      )}
 
-      <h3>Colour</h3>
-      <Field label="Policy">
-        <Select
-          value={plan.color.policy}
-          disabled={passthrough}
-          options={[
-            { value: 'Preserve', label: 'Preserve — keep the description, never touch a pixel' },
-            { value: 'ConvertTo', label: 'Convert to — transform the pixels into a space' },
-            {
-              value: 'Assign',
-              label: 'Assign — re-label without transforming (for files that lie)'
-            },
-            { value: 'ToneMap', label: 'Tone map — HDR down to SDR' }
-          ]}
-          onChange={(v) => mutate((p) => (p.color.policy = v))}
-        />
-      </Field>
-      {plan.color.policy !== 'Preserve' && (
-        <Field label="Target space">
-          <Select
-            value={plan.color.to}
-            options={spaces}
-            disabled={passthrough}
-            onChange={(v) => mutate((p) => (p.color.to = v))}
-          />
-        </Field>
-      )}
-      {(plan.color.policy === 'ConvertTo' || plan.color.policy === 'ToneMap') && (
-        <>
-          <Field label="Rendering intent">
-            <Select
-              value={plan.color.intent}
-              options={intents}
-              disabled={passthrough}
-              onChange={(v) => mutate((p) => (p.color.intent = v))}
-            />
-          </Field>
+      {/* ── Metadata ───────────────────────────────────────────────────── */}
+      <div className="group">
+        <GroupHead
+          info={
+            <Info title="Metadata" label="About metadata">
+              {dngTarget ? (
+                <p>
+                  A DNG always carries the camera&apos;s EXIF and nothing else; the engine refuses
+                  any other policy, so these are set for you.
+                </p>
+              ) : rawSource ? (
+                <p>
+                  A RAW file carries only the camera&apos;s EXIF that can be copied across; there is
+                  no ICC, XMP or IPTC to keep, so those switches are off.
+                </p>
+              ) : (
+                <>
+                  <p>Whatever you tick is copied across exactly as it is — never rewritten.</p>
+                  <p>
+                    Be careful with ICC on a wide-gamut photo: turn it off and the result will look
+                    wrong just about everywhere it is opened.
+                  </p>
+                </>
+              )}
+            </Info>
+          }
+        >
+          Metadata
+        </GroupHead>
+        <div className="checks inline">
           <Toggle
-            label="Black point compensation"
-            checked={plan.color.blackPointCompensation}
-            disabled={passthrough}
-            onChange={(v) => mutate((p) => (p.color.blackPointCompensation = v))}
+            label="EXIF"
+            checked={metadata.exif}
+            disabled={metadataLocked.exif}
+            onChange={(v) => mutate((p) => (p.metadata.exif = v))}
           />
-        </>
-      )}
-      {plan.color.policy === 'ToneMap' && (
-        <>
-          <Field label="Operator">
+          <Toggle
+            label="ICC / CICP"
+            checked={metadata.icc}
+            disabled={metadataLocked.icc}
+            onChange={(v) => mutate((p) => (p.metadata.icc = v))}
+          />
+          <Toggle
+            label="XMP"
+            checked={metadata.xmp}
+            disabled={metadataLocked.xmp}
+            onChange={(v) => mutate((p) => (p.metadata.xmp = v))}
+          />
+          <Toggle
+            label="IPTC"
+            checked={metadata.iptc}
+            disabled={metadataLocked.iptc}
+            onChange={(v) => mutate((p) => (p.metadata.iptc = v))}
+          />
+        </div>
+        {dngTarget ? (
+          <p className="note">A DNG carries the camera&apos;s EXIF and nothing else.</p>
+        ) : rawSource ? (
+          <p className="note">Only the camera&apos;s EXIF can be copied from a RAW file.</p>
+        ) : (
+          <p className="note">Copied verbatim, never rewritten.</p>
+        )}
+      </div>
+
+      {/* ── Colour & rounding ──────────────────────────────────────────── */}
+      <div className={`group ${passthrough ? 'dim' : ''}`}>
+        <GroupHead>Colour &amp; rounding{unused}</GroupHead>
+        <div className="form">
+          <Field label="Policy">
             <Select
-              value={plan.color.operator}
-              options={[
-                { value: 'Bt2390', label: 'BT.2390 — broadcast roll-off' },
-                { value: 'Hable', label: 'Hable — filmic shoulder' },
-                { value: 'Reinhard', label: 'Reinhard — gentle' },
-                { value: 'Clip', label: 'Clip — hard' }
-              ]}
-              onChange={(v) => mutate((p) => (p.color.operator = v))}
-            />
-          </Field>
-          <Field label="Source peak">
-            <Select
-              value={plan.color.sourcePeak}
+              value={plan.color.policy}
+              disabled={passthrough}
               options={[
                 {
-                  value: 'FromFile',
-                  label: info.peak_nits
-                    ? `from the file (${info.peak_nits} cd/m²)`
-                    : 'from the file (this one records none — will fail)'
+                  value: 'Preserve',
+                  label: 'Preserve — keep the description, never touch a pixel'
                 },
-                { value: 'Nits', label: 'stated below' }
+                { value: 'ConvertTo', label: 'Convert to — transform the pixels into a space' },
+                {
+                  value: 'Assign',
+                  label: 'Assign — re-label without transforming (for files that lie)'
+                },
+                { value: 'ToneMap', label: 'Tone map — HDR down to SDR' }
               ]}
-              onChange={(v) => mutate((p) => (p.color.sourcePeak = v))}
+              onChange={(v) => mutate((p) => (p.color.policy = v))}
             />
           </Field>
-          {plan.color.sourcePeak === 'Nits' && (
-            <Field label="Source peak, cd/m²">
-              <Slider
-                value={plan.color.sourcePeakNits}
-                min={100}
-                max={10000}
-                step={10}
-                onChange={(v) => mutate((p) => (p.color.sourcePeakNits = v))}
+          {plan.color.policy !== 'Preserve' && (
+            <Field label="Target space">
+              <Select
+                value={plan.color.to}
+                options={spaces}
+                disabled={passthrough}
+                onChange={(v) => mutate((p) => (p.color.to = v))}
               />
             </Field>
           )}
-          <Field label="Target white, cd/m²" hint="100 reference SDR · 203 BT.2408 graphics white">
-            <Slider
-              value={plan.color.targetPeakNits}
-              min={80}
-              max={400}
-              onChange={(v) => mutate((p) => (p.color.targetPeakNits = v))}
-            />
-          </Field>
-          <Field label="Out-of-gamut colour">
-            <Select
-              value={plan.color.gamut}
-              options={[
-                { value: 'Compress', label: 'Compress — desaturate toward the edge' },
-                { value: 'Clip', label: 'Clip — per channel' }
-              ]}
-              onChange={(v) => mutate((p) => (p.color.gamut = v))}
-            />
-          </Field>
-        </>
-      )}
-
-      {showRaw && (
-        <>
-          <h3>RAW development</h3>
-          <Field label="Mode">
-            <Select
-              value={plan.raw.mode}
-              options={[
-                { value: 'Develop', label: 'Develop the sensor data' },
-                { value: 'EmbeddedPreview', label: "Use the camera's embedded JPEG" }
-              ]}
-              onChange={(v) => mutate((p) => (p.raw.mode = v))}
-            />
-          </Field>
-          {plan.raw.mode === 'Develop' && (
+          {(plan.color.policy === 'ConvertTo' || plan.color.policy === 'ToneMap') && (
+            <Field label="Intent">
+              <Select
+                value={plan.color.intent}
+                options={intents}
+                disabled={passthrough}
+                onChange={(v) => mutate((p) => (p.color.intent = v))}
+              />
+            </Field>
+          )}
+          {plan.color.policy === 'ToneMap' && (
             <>
+              <Field label="Operator">
+                <Select
+                  value={plan.color.operator}
+                  options={[
+                    { value: 'Bt2390', label: 'BT.2390 — broadcast roll-off' },
+                    { value: 'Hable', label: 'Hable — filmic shoulder' },
+                    { value: 'Reinhard', label: 'Reinhard — gentle' },
+                    { value: 'Clip', label: 'Clip — hard' }
+                  ]}
+                  onChange={(v) => mutate((p) => (p.color.operator = v))}
+                />
+              </Field>
+              <Field label="Source peak">
+                <Select
+                  value={plan.color.sourcePeak}
+                  options={[
+                    {
+                      value: 'FromFile',
+                      label: info.peak_nits
+                        ? `from the file (${info.peak_nits} cd/m²)`
+                        : 'from the file (this one records none — will fail)'
+                    },
+                    { value: 'Nits', label: 'stated below' }
+                  ]}
+                  onChange={(v) => mutate((p) => (p.color.sourcePeak = v))}
+                />
+              </Field>
+              {plan.color.sourcePeak === 'Nits' && (
+                <Field label="Source peak, cd/m²">
+                  <Slider
+                    label="Source peak"
+                    value={plan.color.sourcePeakNits}
+                    min={100}
+                    max={10000}
+                    step={10}
+                    onChange={(v) => mutate((p) => (p.color.sourcePeakNits = v))}
+                  />
+                </Field>
+              )}
+              <Field
+                label="Target white, cd/m²"
+                hint="100 reference SDR · 203 BT.2408 graphics white"
+              >
+                <Slider
+                  label="Target white"
+                  value={plan.color.targetPeakNits}
+                  min={80}
+                  max={400}
+                  onChange={(v) => mutate((p) => (p.color.targetPeakNits = v))}
+                />
+              </Field>
+              <Field label="Out of gamut">
+                <Select
+                  value={plan.color.gamut}
+                  options={[
+                    { value: 'Compress', label: 'Compress — desaturate toward the edge' },
+                    { value: 'Clip', label: 'Clip — per channel' }
+                  ]}
+                  onChange={(v) => mutate((p) => (p.color.gamut = v))}
+                />
+              </Field>
+            </>
+          )}
+          <Field
+            label="Dither"
+            hint="Only comes into play on float paths — a resize in linear light, a colour transform, a tone map. For a straight copy it does nothing."
+          >
+            <Select
+              value={plan.dither.mode}
+              disabled={passthrough}
+              options={[
+                { value: 'None', label: 'Round to nearest' },
+                { value: 'TriangularNoise', label: 'Triangular noise, ±1 step' }
+              ]}
+              onChange={(v) => mutate((p) => (p.dither.mode = v))}
+            />
+          </Field>
+          {plan.dither.mode === 'TriangularNoise' && (
+            <Field label="Seed" hint="The same seed gives the same file.">
+              <input
+                type="number"
+                className="wide"
+                min={0}
+                value={plan.dither.seed}
+                aria-label="Dither seed"
+                onChange={(e) =>
+                  mutate((p) => (p.dither.seed = Math.max(0, Number(e.target.value) || 0)))
+                }
+              />
+            </Field>
+          )}
+        </div>
+        {(plan.color.policy === 'ConvertTo' || plan.color.policy === 'ToneMap') && (
+          <div className="checks">
+            <Toggle
+              label="Black point compensation"
+              checked={plan.color.blackPointCompensation}
+              disabled={passthrough}
+              onChange={(v) => mutate((p) => (p.color.blackPointCompensation = v))}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* ── RAW development ────────────────────────────────────────────── */}
+      {showRaw && (
+        <div className="group">
+          <GroupHead>RAW development</GroupHead>
+          <div className="form">
+            <Field label="Mode">
+              <Select
+                value={plan.raw.mode}
+                options={[
+                  { value: 'Develop', label: 'Develop the sensor data' },
+                  { value: 'EmbeddedPreview', label: "Use the camera's embedded JPEG" }
+                ]}
+                onChange={(v) => mutate((p) => (p.raw.mode = v))}
+              />
+            </Field>
+            {plan.raw.mode === 'Develop' && (
+              <Field label="Crop">
+                <Select
+                  value={plan.raw.crop}
+                  options={(['Best', 'ActiveArea', 'None'] as const).map((s) => ({
+                    value: s,
+                    label: s
+                  }))}
+                  onChange={(v) => mutate((p) => (p.raw.crop = v))}
+                />
+              </Field>
+            )}
+          </div>
+          {plan.raw.mode === 'Develop' && (
+            <div className="checks">
               <Toggle
                 label="Scale black/white levels"
                 checked={plan.raw.scaling}
@@ -721,48 +858,10 @@ export function DialsPanel({
                 checked={plan.raw.srgbGamma}
                 onChange={(v) => mutate((p) => (p.raw.srgbGamma = v))}
               />
-              <Field label="Crop">
-                <Select
-                  value={plan.raw.crop}
-                  options={(['Best', 'ActiveArea', 'None'] as const).map((s) => ({
-                    value: s,
-                    label: s
-                  }))}
-                  onChange={(v) => mutate((p) => (p.raw.crop = v))}
-                />
-              </Field>
-            </>
+            </div>
           )}
-        </>
+        </div>
       )}
-
-      <h3>Rounding</h3>
-      <Field
-        label="Dither"
-        hint="only on float paths: a resize in linear light, a colour transform, a tone map"
-      >
-        <Select
-          value={plan.dither.mode}
-          disabled={passthrough}
-          options={[
-            { value: 'None', label: 'Round to nearest' },
-            { value: 'TriangularNoise', label: 'Triangular noise, ±1 step' }
-          ]}
-          onChange={(v) => mutate((p) => (p.dither.mode = v))}
-        />
-      </Field>
-      {plan.dither.mode === 'TriangularNoise' && (
-        <Field label="Seed" hint="the same seed gives the same file">
-          <input
-            type="number"
-            min={0}
-            value={plan.dither.seed}
-            onChange={(e) =>
-              mutate((p) => (p.dither.seed = Math.max(0, Number(e.target.value) || 0)))
-            }
-          />
-        </Field>
-      )}
-    </section>
+    </Collapsible>
   )
 }

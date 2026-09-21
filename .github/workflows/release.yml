@@ -96,9 +96,10 @@ jobs:
       - name: Package and publish
         run: pnpm exec electron-builder ${{ matrix.args }} --publish always
         env:
-          # --- update feed (IDrive e2, S3-compatible); the bucket is named in
-          #     electron-builder.yml, since electron-builder does not expand
-          #     ${env.*} inside the publish block ---
+          # --- update feed (Cloudflare R2, S3-compatible); the bucket and
+          #     endpoint are named in electron-builder.yml, since electron-builder
+          #     does not expand ${env.*} inside the publish block. The secrets
+          #     hold an R2 API token's S3 access key / secret key. ---
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           # Recent AWS SDKs add CRC32 checksums to every upload, which many

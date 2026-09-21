@@ -128,7 +128,7 @@ Each per-arch build therefore carries exactly one engine binary.
 2. `release-please` keeps a release PR open with the next version and CHANGELOG.
 3. Merging that PR tags `vX.Y.Z` and creates the GitHub release, then `release.yml`
    builds macOS arm64, macOS x64 and Windows x64, signs and notarizes macOS, and
-   uploads installers plus `latest*.yml` / `beta*.yml` manifests to the S3 bucket.
+   uploads installers plus `latest*.yml` / `beta*.yml` manifests to the Cloudflare R2 bucket.
 4. Installed apps check the bucket on launch and every 4 hours, download in the
    background, and install on quit or when the user clicks _Restart to update_.
 
@@ -152,9 +152,9 @@ Set in _Settings → Secrets and variables → Actions_.
 | ----------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PACKAGES_TOKEN`              | secret                          | classic PAT with `read:packages` for `@xuckless/pixl-engine` (GitHub forbids secret names starting with `GITHUB_`; workflows hand it to `actions/setup-node` as `NODE_AUTH_TOKEN`) |
 | `RELEASE_PLEASE_TOKEN`        | secret (optional)               | PAT with `repo` + `workflow`; without it release-please and the bump PR use `GITHUB_TOKEN` and their PRs carry no CI checks                                                        |
-| `AWS_ACCESS_KEY_ID`           | secret                          | IDrive e2 access key (S3-compatible)                                                                                                                                               |
-| `AWS_SECRET_ACCESS_KEY`       | secret                          | IDrive e2 secret key                                                                                                                                                               |
-| (bucket)                      | —                               | named directly in `electron-builder.yml` and `dev-app-update.yml` (`shipment`); electron-builder cannot read it from the environment                                               |
+| `AWS_ACCESS_KEY_ID`           | secret                          | Cloudflare R2 API token: S3 access key                                                                                                                                             |
+| `AWS_SECRET_ACCESS_KEY`       | secret                          | Cloudflare R2 API token: S3 secret key                                                                                                                                             |
+| (bucket / URLs)               | —                               | bucket `shipment`, the R2 S3 endpoint and the public bucket URL are named directly in `electron-builder.yml` and `dev-app-update.yml`; electron-builder cannot read them from the environment |
 | `CSC_LINK`                    | secret (optional until signing) | base64 of the Developer ID Application `.p12`; unsigned build when absent                                                                                                          |
 | `CSC_KEY_PASSWORD`            | secret                          | password of that `.p12`                                                                                                                                                            |
 | `APPLE_ID`                    | secret                          | Apple ID used for notarization                                                                                                                                                     |
@@ -163,10 +163,13 @@ Set in _Settings → Secrets and variables → Actions_.
 | `WIN_CSC_LINK`                | secret (optional)               | base64 of a Windows code-signing `.pfx`; unsigned when absent                                                                                                                      |
 | `WIN_CSC_KEY_PASSWORD`        | secret (optional)               | its password                                                                                                                                                                       |
 
-Bucket requirements: objects under `space-pixl/` must be publicly readable (the
-publisher sets `public-read`; the bucket's own policy must allow it), and the
-virtual-hosted URL `https://<bucket>.s3.us-midwest-1.idrivee2.com` must resolve. If it
-does not, enable `forcePathStyle: true` in `electron-builder.yml` and `dev-app-update.yml`.
+Bucket requirements: the app reads its feed through the bucket's public URL
+(`https://pub-a43a48ef06ba489fb058d7378d921856.r2.dev`), so public access must stay
+enabled on `shipment` in the Cloudflare dashboard. R2's S3 endpoint only answers signed
+requests and R2 has no object ACLs, which is why `publish` in `electron-builder.yml`
+lists a `generic` entry (the feed compiled into the app) before the `s3` entry (the
+upload target). The `r2.dev` URL is rate-limited and intended for development; attach
+a custom domain to the bucket and swap it into both files before a wide release.
 
 macOS auto-update only works on signed, notarized builds; Squirrel.Mac refuses anything
 else. Windows updates work unsigned but SmartScreen warns until a certificate is added.

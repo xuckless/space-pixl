@@ -4,19 +4,26 @@ import { encodeVariant } from '../../../shared/engine-types'
 
 export type Tone = 'ok' | 'warn' | 'err' | ''
 
-export function engineLabel(e: EngineStatus | undefined): { text: string; tone: Tone } {
+export function engineLabel(e: EngineStatus | undefined): {
+  text: string
+  tone: Tone
+  version?: string
+} {
   if (!e) return { text: '…', tone: '' }
   switch (e.status) {
     case 'starting':
-      return { text: 'Starting', tone: '' }
+      return { text: 'Engine starting', tone: '' }
     case 'ready':
       return e.flavour === 'mock'
-        ? { text: 'Placeholder engine', tone: 'warn' }
-        : { text: `Ready · v${e.version}`, tone: 'ok' }
+        ? { text: 'Placeholder engine', tone: 'warn', version: e.version }
+        : { text: 'Engine ready', tone: 'ok', version: e.version }
     case 'unavailable':
-      return { text: 'Unavailable', tone: 'warn' }
+      return { text: 'Engine unavailable', tone: 'warn' }
     case 'crashed':
-      return { text: `Crashed (${e.restarts} restarts)`, tone: 'err' }
+      return {
+        text: `Engine crashed · ${e.restarts} restart${e.restarts === 1 ? '' : 's'}`,
+        tone: 'err'
+      }
   }
 }
 
@@ -33,4 +40,9 @@ export function describeEncode(e: Encode): string {
     v,
     ...Object.entries(fields).map(([k, val]) => `${k.replace(/_/g, ' ')} ${String(val)}`)
   ].join(' · ')
+}
+
+/** A file's base name, whichever separator the platform used. */
+export function fileName(p: string): string {
+  return p.split(/[\\/]/).pop() ?? p
 }

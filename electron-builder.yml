@@ -101,20 +101,31 @@ linux:
 appImage:
   artifactName: ${name}-${version}-${arch}.${ext}
 
-# Update assets live on the IDrive e2 bucket (S3-compatible). Publishing needs
-# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in the environment. The bucket is
-# named here because electron-builder does not expand ${env.*} in this block
-# (a first release went out addressed to the literal macro). The channel is derived from the version:
-# 0.2.0 → latest.yml, 0.2.0-beta.1 → beta.yml, so prereleases never reach
-# stable users. The same block is compiled into the app as its update feed.
+# Update assets live on the Cloudflare R2 bucket `shipment`. Two entries:
+# the first (generic) is what gets compiled into the app as its update feed,
+# because R2's S3 endpoint (*.r2.cloudflarestorage.com) only answers signed
+# requests, while the bucket's public URL serves objects anonymously. The
+# second (s3) is what electron-builder uploads through; a generic provider is
+# never uploaded to. Publishing needs AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+# (an R2 API token) in the environment. The bucket and URLs are spelled out
+# because electron-builder does not expand ${env.*} in this block (a first
+# release went out addressed to the literal macro). The channel is derived
+# from the version: 0.2.0 → latest.yml, 0.2.0-beta.1 → beta.yml, so
+# prereleases never reach stable users.
 publish:
-  provider: s3
-  endpoint: https://s3.us-midwest-1.idrivee2.com
-  region: us-midwest-1
-  bucket: shipment
-  path: /space-pixl
-  acl: public-read
-  # IDrive e2 serves buckets at <bucket>.s3.<region>.idrivee2.com. If the
-  # virtual-hosted URL 403s or fails DNS, uncomment to use path-style URLs
-  # (https://s3.us-midwest-1.idrivee2.com/<bucket>/space-pixl/...).
-  # forcePathStyle: true
+  - provider: generic
+    # Public bucket URL (r2.dev is rate-limited and meant for development;
+    # swap in a custom domain attached to the bucket before wide release).
+    url: https://pub-a43a48ef06ba489fb058d7378d921856.r2.dev/space-pixl
+    # Cloudflare only honours single-range requests, so skip the multi-range
+    # attempt electron-updater makes for differential downloads.
+    useMultipleRangeRequest: false
+  - provider: s3
+    endpoint: https://cc84ce804f5409f094e6376fcc9fdb3b.r2.cloudflarestorage.com
+    region: auto
+    bucket: shipment
+    path: /space-pixl
+    # R2 has no object ACLs; visibility comes from the bucket's public access
+    # setting. null stops the publisher sending an x-amz-acl header.
+    acl: null
+    forcePathStyle: true

@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import type { HueBin } from '../../../shared/engine-types'
 import { formatBytes } from '../../../shared/format'
 
@@ -5,36 +6,48 @@ import { formatBytes } from '../../../shared/format'
 export function Histogram({
   counts,
   color = 'var(--accent)',
-  height = 72
+  height = 90,
+  label = 'histogram'
 }: {
   counts: number[]
   color?: string
   height?: number
+  label?: string
 }): React.JSX.Element {
+  const id = useId()
   const n = counts.length
-  if (n === 0) return <svg className="histogram" viewBox="0 0 256 72" />
+  const w = 520
+  if (n === 0) return <svg className="histogram" viewBox={`0 0 ${w} ${height}`} />
   const max = Math.max(1, ...counts)
-  const w = 256
   const points = counts.map((c, i) => {
     const x = (i / (n - 1 || 1)) * w
-    const y = height - (Math.log1p(c) / Math.log1p(max)) * (height - 4) - 1
+    const y = height - (Math.log1p(c) / Math.log1p(max)) * (height - 6) - 1
     return `${x.toFixed(1)},${y.toFixed(1)}`
   })
   const d = `M0,${height} L${points.join(' L')} L${w},${height} Z`
+  const line = `M${points.join(' L')}`
   return (
     <svg
       className="histogram"
       viewBox={`0 0 ${w} ${height}`}
       preserveAspectRatio="none"
       role="img"
-      aria-label="histogram"
+      aria-label={label}
+      style={{ height }}
     >
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={color} stopOpacity={0.75} />
+          <stop offset="1" stopColor={color} stopOpacity={0.15} />
+        </linearGradient>
+      </defs>
+      <path d={d} fill={`url(#${id})`} />
       <path
-        d={d}
-        fill={color}
-        fillOpacity={0.35}
+        d={line}
+        fill="none"
         stroke={color}
-        strokeWidth={1}
+        strokeWidth={1.5}
+        strokeOpacity={0.9}
         vectorEffect="non-scaling-stroke"
       />
     </svg>
@@ -87,6 +100,12 @@ export function HueBars({
   )
 }
 
+function dayLabel(day: string): string {
+  const d = new Date(`${day}T00:00:00`)
+  if (Number.isNaN(d.getTime())) return day.slice(5)
+  return d.toLocaleDateString(undefined, { month: 'short', day: '2-digit' })
+}
+
 /** Daily savings, one bar per day, hover for the number. */
 export function DailyBars({
   points
@@ -94,40 +113,37 @@ export function DailyBars({
   points: { day: string; savedBytes: number; files: number }[]
 }): React.JSX.Element {
   const max = Math.max(1, ...points.map((p) => Math.max(0, p.savedBytes)))
-  const w = 600
-  const h = 140
-  const gap = 2
-  const bw = (w - gap * (points.length - 1)) / Math.max(1, points.length)
   const empty = points.every((p) => p.savedBytes === 0)
+  const labelled = points.filter((_, i) => i % 7 === 0)
   return (
-    <div className="daily">
-      <svg viewBox={`0 0 ${w} ${h + 18}`} role="img" aria-label="savings per day, last 30 days">
+    <>
+      <div className="bars" role="img" aria-label="savings per day, last 30 days">
         {points.map((p, i) => {
-          const bh = Math.max(p.savedBytes > 0 ? 2 : 0, (Math.max(0, p.savedBytes) / max) * h)
-          const x = i * (bw + gap)
+          const on = p.savedBytes > 0
+          const pct = on ? Math.max(4, (Math.max(0, p.savedBytes) / max) * 100) : 0
           return (
-            <g key={p.day}>
-              <rect
-                x={x}
-                y={h - bh}
-                width={bw}
-                height={bh}
-                rx={2}
-                fill="var(--accent)"
-                fillOpacity={p.savedBytes > 0 ? 0.85 : 0.15}
-              >
-                <title>{`${p.day}: ${formatBytes(p.savedBytes)} across ${p.files} file${p.files === 1 ? '' : 's'}`}</title>
-              </rect>
-              {(i === 0 || i === points.length - 1 || i % 7 === 0) && (
-                <text x={x + bw / 2} y={h + 14} textAnchor="middle" className="axis">
-                  {p.day.slice(5)}
-                </text>
-              )}
-            </g>
+            <div
+              key={p.day}
+              className={`bar ${on ? 'on' : ''}`}
+              style={{
+                height: on ? `${pct}%` : `${3 + ((i * 7) % 4)}px`,
+                animationDelay: `${i * 18}ms`
+              }}
+              title={
+                on
+                  ? `${dayLabel(p.day)} · ${formatBytes(p.savedBytes)} across ${p.files} file${p.files === 1 ? '' : 's'}`
+                  : `${dayLabel(p.day)} · no activity`
+              }
+            />
           )
         })}
-      </svg>
-      {empty && <div className="muted daily-empty">No conversions in the last 30 days.</div>}
-    </div>
+      </div>
+      <div className="axis">
+        {labelled.map((p) => (
+          <span key={p.day}>{dayLabel(p.day)}</span>
+        ))}
+      </div>
+      {empty && <p className="note">No conversions in the last 30 days.</p>}
+    </>
   )
 }
