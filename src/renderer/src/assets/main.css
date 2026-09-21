@@ -354,6 +354,13 @@ input:focus-visible {
   overflow-y: auto;
 }
 
+/* A scrolling page is a flex column; its cards must keep their height and let
+   the page scroll instead of being squeezed. Only matters for a card with
+   `overflow: hidden` (the stats hero), whose min-height is otherwise 0. */
+.page.scroll > * {
+  flex-shrink: 0;
+}
+
 .scroll {
   overflow-y: auto;
   overflow-x: hidden;
@@ -615,6 +622,7 @@ input:focus-visible {
 
 .hero {
   position: relative;
+  flex-shrink: 0;
   overflow: hidden;
   gap: 20px;
   padding: 22px 24px 24px;
