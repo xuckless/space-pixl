@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/xuckless/space-pixl/compare/v0.1.4...v0.1.5) (2026-09-22)
+
+
+### Bug Fixes
+
+* **release:** package one architecture per job so macOS gets its own binding ([#10](https://github.com/xuckless/space-pixl/issues/10)) ([18e2b81](https://github.com/xuckless/space-pixl/commit/18e2b8195e402dadc25421c08d790f1e3a7f4ffa))
+
 ## [0.1.4](https://github.com/xuckless/space-pixl/compare/v0.1.3...v0.1.4) (2026-09-22)
 
 

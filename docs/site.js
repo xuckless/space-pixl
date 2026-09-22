@@ -2,7 +2,7 @@
    bars, engine tabs, the gallery lightbox and the sticky nav. No framework. */
 
 const REPO = 'xuckless/space-pixl'
-const FALLBACK_VERSION = '0.1.4' // x-release-please-version
+const FALLBACK_VERSION = '0.1.5' // x-release-please-version
 
 // Measured on the engine's 8.04 MB JPEG fixture (Apple M2 Pro, release build).
 const MEASURED = [
