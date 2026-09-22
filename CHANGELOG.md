@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/xuckless/space-pixl/compare/v0.1.5...v0.1.6) (2026-09-22)
+
+
+### Bug Fixes
+
+* **release:** drop the version from asset names so download links survive ([#13](https://github.com/xuckless/space-pixl/issues/13)) ([78a6b0f](https://github.com/xuckless/space-pixl/commit/78a6b0ff9d32d38ea5f7eadf5736d96aeb2132d7))
+
 ## [0.1.5](https://github.com/xuckless/space-pixl/compare/v0.1.4...v0.1.5) (2026-09-22)
 
 

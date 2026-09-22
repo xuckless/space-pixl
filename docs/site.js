@@ -2,7 +2,7 @@
    bars, engine tabs, the gallery lightbox and the sticky nav. No framework. */
 
 const REPO = 'xuckless/space-pixl'
-const FALLBACK_VERSION = '0.1.5' // x-release-please-version
+const FALLBACK_VERSION = '0.1.6' // x-release-please-version
 
 // Asset names carry no version — see `artifactName` in electron-builder.yml —
 // so `releases/latest/download/<name>` resolves in every release and these
