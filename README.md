@@ -3,10 +3,12 @@
 Reclaim storage by re-encoding a photo library with the [PIXL engine](https://github.com/xuckless/pixl-engine).
 Electron + React + TypeScript, built with electron-vite and shipped with electron-builder.
 
-The engine is a private Rust crate. This app never sees its source: it depends on the
-compiled Node binding `@xuckless/pixl-engine`, published to GitHub Packages by the
-engine's own release pipeline. The binding runs inside an Electron utility process so an
-engine crash restarts the worker instead of taking the app down.
+This repository is public; the engine is not. The engine is a private Rust crate and this
+app never sees its source: it depends on the compiled Node binding `@xuckless/pixl-engine`,
+published to GitHub Packages by the engine's own release pipeline. That package is private
+too, so installing the dependencies needs a `read:packages` token for it (see _Develop_);
+without one the app cannot be built from this source. The binding runs inside an Electron
+utility process so an engine crash restarts the worker instead of taking the app down.
 
 ## Layout
 
@@ -28,7 +30,6 @@ src/shared/ipc.ts            channel names and the result types both sides share
 src/renderer/src/pages/      Optimise (analyse → recommend → dials → preview → convert) · Stats · Settings
 src/renderer/src/components/ AnalysisPanel · RecommendationPanel · DialsPanel · PreviewPanel · charts · ui
 tests/                       node --test over the pure modules (plan, recommend, db, mock)
-scripts/engine-linux.mjs     builds the engine binding for this Linux machine and installs it for local builds
 electron-builder.yml         packaging, signing, notarization, update feed
 .github/workflows/           ci · release-please · release · bump-engine
 ```
@@ -84,34 +85,13 @@ under `node_modules` (its postinstall was skipped, for instance by an install ru
 `ELECTRON_SKIP_BINARY_DOWNLOAD=1`). Fetch it with `node node_modules/electron/install.js`;
 `pnpm rebuild electron` will not, since pnpm considers the package already built.
 
-Until `@xuckless/pixl-engine` is published the app runs without it and the Engine card
-shows "Unavailable". Add the dependency with
-`pnpm add @xuckless/pixl-engine` once it exists; nothing else changes.
-
 ### Linux
 
-Nothing is published for Linux, but the app can be built, packaged and tested on a Linux
-machine without a GitHub Actions run. The engine binding is compiled from the sibling
-`pixl-engine` checkout (`../pixl-engine`, or `PIXL_ENGINE_DIR`) inside the engine's
-`pixl-dev` container, which carries the pinned Rust toolchain and libheif/libjxl headers,
-and the resulting `.node` is copied beside the installed `@xuckless/pixl-engine`, where its
-loader looks first. No dependency or lockfile changes, so the macOS and Windows builds are
-untouched.
-
-```sh
-pnpm engine:linux   # compile the binding in the pixl-dev container (built on first use) and install it
-pnpm dev            # now runs the native engine instead of the placeholder
-pnpm build:linux    # AppImage in dist/, plus dist/linux-unpacked/space-pixl to run directly
-```
-
-`pnpm engine:linux -- --host` compiles with the host's `cargo` instead of the container;
-`-- --no-build` only installs an already compiled `.node`. Rerun after `pnpm install`
-replaces the package and after any engine change.
-
-The binding links `libheif` and `libjxl` dynamically, so those runtime packages must be
-installed (Fedora ships both). HEIC decoding also needs `libheif-freeworld` from RPM Fusion.
-The AppImage needs `libfuse.so.2` (`fuse-libs` on Fedora) or can be run with
-`--appimage-extract-and-run`; the unpacked tree needs neither.
+Nothing is published for Linux; it is a development target only. `pnpm dev` runs with the
+placeholder engine unless a Linux build of the binding is placed beside the installed
+`@xuckless/pixl-engine`, where its loader looks first. `pnpm exec electron-builder --linux --x64`
+then packages an AppImage into `dist/` (needs `libfuse.so.2` to run, or
+`--appimage-extract-and-run`); `dist/linux-unpacked/space-pixl` runs directly.
 
 ### Native addon packaging
 
@@ -127,9 +107,10 @@ Each per-arch build therefore carries exactly one engine binary.
    (`feat:`, `fix:`, `perf:`…). `feat` bumps minor, `fix` bumps patch while pre-1.0.
 2. `release-please` keeps a release PR open with the next version and CHANGELOG.
 3. Merging that PR tags `vX.Y.Z` and creates the GitHub release, then `release.yml`
-   builds macOS arm64, macOS x64 and Windows x64, signs and notarizes macOS, and
-   uploads installers plus `latest*.yml` / `beta*.yml` manifests to the Cloudflare R2 bucket.
-4. Installed apps check the bucket on launch and every 4 hours, download in the
+   builds macOS arm64, macOS x64 and Windows x64 on GitHub-hosted runners (`macos-15`,
+   `macos-15-intel`, `windows-latest`), signs and notarizes macOS when the secrets exist,
+   and attaches installers plus `latest*.yml` / `beta*.yml` manifests to that release.
+4. Installed apps check the releases on launch and every 4 hours, download in the
    background, and install on quit or when the user clicks _Restart to update_.
 
 **Channels.** The channel is derived from the version: `0.3.0` publishes to `latest`,
@@ -142,7 +123,13 @@ sends this repo a `repository_dispatch` (`pixl-engine-released`). `bump-engine.y
 opens a `fix(engine): bump pixl-engine to X` PR. Merge it and release-please cuts a
 patch release carrying the new engine. Nothing ships automatically without that merge.
 
-**Manual build.** _Actions → Release → Run workflow_ with a tag name.
+**Manual build.** _Actions → Release → Run workflow_ with a tag name. The workflow sets
+`EP_GH_IGNORE_TIME` so electron-builder also uploads to a release published more than two
+hours earlier; assets that already exist on the release are overwritten.
+
+**CI.** Every job runs on GitHub-hosted runners. Pull requests from forks do not run CI:
+the workflow skips them and the repository requires approval for external contributors,
+since the private engine package could not be installed there anyway.
 
 ## Secrets and variables
 
@@ -152,9 +139,6 @@ Set in _Settings → Secrets and variables → Actions_.
 | ----------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PACKAGES_TOKEN`              | secret                          | classic PAT with `read:packages` for `@xuckless/pixl-engine` (GitHub forbids secret names starting with `GITHUB_`; workflows hand it to `actions/setup-node` as `NODE_AUTH_TOKEN`) |
 | `RELEASE_PLEASE_TOKEN`        | secret (optional)               | PAT with `repo` + `workflow`; without it release-please and the bump PR use `GITHUB_TOKEN` and their PRs carry no CI checks                                                        |
-| `AWS_ACCESS_KEY_ID`           | secret                          | Cloudflare R2 API token: S3 access key                                                                                                                                             |
-| `AWS_SECRET_ACCESS_KEY`       | secret                          | Cloudflare R2 API token: S3 secret key                                                                                                                                             |
-| (bucket / URLs)               | —                               | bucket `shipment`, the R2 S3 endpoint and the public bucket URL are named directly in `electron-builder.yml` and `dev-app-update.yml`; electron-builder cannot read them from the environment |
 | `CSC_LINK`                    | secret (optional until signing) | base64 of the Developer ID Application `.p12`; unsigned build when absent                                                                                                          |
 | `CSC_KEY_PASSWORD`            | secret                          | password of that `.p12`                                                                                                                                                            |
 | `APPLE_ID`                    | secret                          | Apple ID used for notarization                                                                                                                                                     |
@@ -163,13 +147,10 @@ Set in _Settings → Secrets and variables → Actions_.
 | `WIN_CSC_LINK`                | secret (optional)               | base64 of a Windows code-signing `.pfx`; unsigned when absent                                                                                                                      |
 | `WIN_CSC_KEY_PASSWORD`        | secret (optional)               | its password                                                                                                                                                                       |
 
-Bucket requirements: the app reads its feed through the bucket's public URL
-(`https://pub-a43a48ef06ba489fb058d7378d921856.r2.dev`), so public access must stay
-enabled on `shipment` in the Cloudflare dashboard. R2's S3 endpoint only answers signed
-requests and R2 has no object ACLs, which is why `publish` in `electron-builder.yml`
-lists a `generic` entry (the feed compiled into the app) before the `s3` entry (the
-upload target). The `r2.dev` URL is rate-limited and intended for development; attach
-a custom domain to the bucket and swap it into both files before a wide release.
+Release assets: `release.yml` uploads with the workflow's own `GITHUB_TOKEN` (it has
+`contents: write`) to the release that release-please published for the tag, which is why
+`publish` in `electron-builder.yml` is the `github` provider with `releaseType: release`.
+The repository is public, so installed apps read the releases without any token.
 
 macOS auto-update only works on signed, notarized builds; Squirrel.Mac refuses anything
 else. Windows updates work unsigned but SmartScreen warns until a certificate is added.
@@ -177,6 +158,5 @@ else. Windows updates work unsigned but SmartScreen warns until a certificate is
 ## Testing the updater from a dev build
 
 ```sh
-# fill in the bucket in dev-app-update.yml first
-SPACE_PIXL_FORCE_UPDATER=1 pnpm dev
+SPACE_PIXL_FORCE_UPDATER=1 pnpm dev   # reads the feed named in dev-app-update.yml
 ```

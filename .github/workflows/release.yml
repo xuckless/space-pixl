@@ -1,11 +1,15 @@
 name: Release
 
-# Builds, signs and publishes installers for one tag on every platform.
-# Called by release-please.yml after a release is cut, or by hand for a tag.
+# Builds, signs and publishes installers for one tag on every platform, and
+# attaches them to the tag's GitHub release, which is also the update feed
+# installed apps poll. Called by release-please.yml after a release is cut,
+# or by hand for a tag.
 #
 # Channel: electron-builder derives it from the version. 0.3.0 publishes
 # latest.yml / latest-mac.yml; 0.3.0-beta.1 publishes beta.yml / beta-mac.yml.
 # Stable users never see a prerelease.
+#
+# All jobs run on GitHub-hosted runners (free for a public repository).
 
 on:
   workflow_call:
@@ -22,7 +26,7 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write # upload assets to the release
 
 jobs:
   build:
@@ -32,20 +36,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Both macOS builds run on the self-hosted MacBook; electron-builder
-          # cross-packages x64 on arm64 (pnpm-workspace.yaml makes pnpm
-          # install both darwin engine packages there). Windows stays on a
-          # GitHub-hosted runner.
           - name: macOS arm64
-            key: mac-arm64
-            runner: [self-hosted, macOS, ARM64]
+            runner: macos-15
             args: --mac --arm64
           - name: macOS x64
-            key: mac-x64
-            runner: [self-hosted, macOS, ARM64]
+            # Intel runners: macos-13 was retired; macos-15-intel is the
+            # current Intel label. Adjust if GitHub renames it.
+            runner: macos-15-intel
             args: --mac --x64
           - name: Windows x64
-            key: win-x64
             runner: windows-latest
             args: --win --x64
     env:
@@ -98,35 +97,16 @@ jobs:
           WIN_CSC_LINK_IN: ${{ secrets.WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD_IN: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
 
-      - name: Package and publish
+      - name: Package and publish to the GitHub release
         run: pnpm exec electron-builder ${{ matrix.args }} --publish always
         env:
-          # --- update feed (Cloudflare R2, S3-compatible); the bucket and
-          #     endpoint are named in electron-builder.yml, since electron-builder
-          #     does not expand ${env.*} inside the publish block. The secrets
-          #     hold an R2 API token's S3 access key / secret key. ---
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          # Recent AWS SDKs add CRC32 checksums to every upload, which many
-          # S3-compatible stores reject; only send them when the API requires.
-          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
-          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
-          # The self-hosted MacBook's keychain holds only an "Apple
-          # Development" identity, which electron-builder rejects for dmg and
-          # zip anyway. Turning discovery off makes the unsigned build
-          # deliberate instead of a warning nobody reads. Set this back to
-          # `${{ runner.os == 'macOS' }}` once a Developer ID Application
-          # certificate is in the keychain, or set CSC_LINK instead.
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-
-      - name: Keep installers as a workflow artifact too
-        uses: actions/upload-artifact@v4
-        with:
-          name: space-pixl-${{ inputs.tag }}-${{ matrix.key }}
-          path: |
-            dist/*.dmg
-            dist/*.zip
-            dist/*.exe
-            dist/*.blockmap
-            dist/*.yml
-          if-no-files-found: error
+          # electron-builder's GitHub publisher uploads with this token to the
+          # release release-please created for the tag (electron-builder.yml
+          # sets releaseType: release so the published release is accepted).
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # By default the publisher refuses a release published more than
+          # two hours ago; a manual run for an older tag must still upload.
+          EP_GH_IGNORE_TIME: 'true'
+          # Look for a Developer ID identity in the keychain when no CSC_LINK
+          # is given; finding none yields an unsigned build with a warning.
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ runner.os == 'macOS' && 'true' || 'false' }}
