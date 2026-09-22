@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/xuckless/space-pixl/compare/v0.1.3...v0.1.4) (2026-09-22)
+
+
+### Bug Fixes
+
+* **release:** publish installers to GitHub Releases from GitHub-hosted runners ([#6](https://github.com/xuckless/space-pixl/issues/6)) ([7890b7f](https://github.com/xuckless/space-pixl/commit/7890b7f2b1e36136397042335090c85c1d08af98))
+
 ## [0.1.3](https://github.com/xuckless/space-pixl/compare/v0.1.2...v0.1.3) (2026-09-21)
 
 
