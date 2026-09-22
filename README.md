@@ -12,11 +12,11 @@
 [![Built on the PIXL engine](https://img.shields.io/badge/built%20on-PIXL%20engine-6fd7a3?style=flat-square&labelColor=12151b)](#meet-the-pixl-engine)
 
 <p>
-<a href="https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-0.1.4-arm64.dmg"><b>macOS · Apple Silicon</b></a> <!-- x-release-please-version -->
+<a href="https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-mac-arm64.dmg"><b>macOS · Apple Silicon</b></a>
 &nbsp;·&nbsp;
-<a href="https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-0.1.4-x64.dmg"><b>macOS · Intel</b></a> <!-- x-release-please-version -->
+<a href="https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-mac-x64.dmg"><b>macOS · Intel</b></a>
 &nbsp;·&nbsp;
-<a href="https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-0.1.4-setup.exe"><b>Windows x64</b></a> <!-- x-release-please-version -->
+<a href="https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-win-x64-setup.exe"><b>Windows x64</b></a>
 </p>
 
 <sub>Builds are unsigned for now; the <a href="#install">install steps</a> take one extra line on macOS.</sub>
@@ -243,8 +243,8 @@ The app checks for updates on launch and every four hours.
 <summary><b>macOS 13+</b></summary>
 
 1. Download the disk image for your Mac. Not sure which? → About This Mac → Chip.
-   - [**Apple Silicon**](https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-0.1.4-arm64.dmg) (M1 or newer) <!-- x-release-please-version -->
-   - [**Intel**](https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-0.1.4-x64.dmg) <!-- x-release-please-version -->
+   - [**Apple Silicon**](https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-mac-arm64.dmg) (M1 or newer)
+   - [**Intel**](https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-mac-x64.dmg)
 2. Open the `.dmg` and drag **Space Pixl** to **Applications**.
 3. Clear the quarantine flag once (this is what the "damaged" dialog is about). In Terminal:
 
@@ -262,7 +262,7 @@ the releases page and repeat step 3.
 <details open>
 <summary><b>Windows 10 / 11, 64-bit</b></summary>
 
-1. Download the [**installer**](https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-0.1.4-setup.exe) (`space-pixl-<version>-setup.exe`). <!-- x-release-please-version -->
+1. Download the [**installer**](https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-win-x64-setup.exe) (`space-pixl-win-x64-setup.exe`).
 2. Run it. It installs per user, with no admin prompt. If SmartScreen appears, click **More info**, then **Run anyway**.
 3. Space Pixl opens when the installer finishes and updates itself in the background from then on.
 

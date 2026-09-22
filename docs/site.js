@@ -4,6 +4,16 @@
 const REPO = 'xuckless/space-pixl'
 const FALLBACK_VERSION = '0.1.4' // x-release-please-version
 
+// Asset names carry no version — see `artifactName` in electron-builder.yml —
+// so `releases/latest/download/<name>` resolves in every release and these
+// stay correct without stamping. The live release's own `browser_download_url`
+// is preferred when the API answers; this is the shape of the fallback.
+const ASSETS = {
+  'mac-arm64': 'space-pixl-mac-arm64.dmg',
+  'mac-x64': 'space-pixl-mac-x64.dmg',
+  'win-x64': 'space-pixl-win-x64-setup.exe'
+}
+
 // Measured on the engine's 8.04 MB JPEG fixture (Apple M2 Pro, release build).
 const MEASURED = [
   { key: 'avif', name: 'AVIF q60', mb: 2.58 },
@@ -51,12 +61,11 @@ function detectPlatform() {
   return { os: 'other', arch: '' }
 }
 
-function assetFor(os, arch, version) {
-  const base = `https://github.com/${REPO}/releases/download/v${version}/`
-  if (os === 'win') return { key: 'win-x64', name: `space-pixl-${version}-setup.exe`, base }
+function assetFor(os, arch) {
+  if (os === 'win') return { key: 'win-x64', name: ASSETS['win-x64'] }
   if (os === 'mac') {
-    const a = arch === 'x64' ? 'x64' : 'arm64'
-    return { key: `mac-${a}`, name: `space-pixl-${version}-${a}.dmg`, base }
+    const key = arch === 'x64' ? 'mac-x64' : 'mac-arm64'
+    return { key, name: ASSETS[key] }
   }
   return null
 }
@@ -74,13 +83,11 @@ function applyRelease(version, assets) {
     })
     $$(`[data-asset-name="${key}"]`).forEach((el) => (el.textContent = name))
   }
-  link('mac-arm64', `space-pixl-${version}-arm64.dmg`)
-  link('mac-x64', `space-pixl-${version}-x64.dmg`)
-  link('win-x64', `space-pixl-${version}-setup.exe`)
+  for (const [key, name] of Object.entries(ASSETS)) link(key, name)
   $$('[data-version]').forEach((el) => (el.textContent = `v${version}`))
 
   const { os, arch } = detectPlatform()
-  const mine = assetFor(os, arch, version)
+  const mine = assetFor(os, arch)
   const primary = $('#cta-primary')
   if (mine) {
     primary.href =

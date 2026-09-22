@@ -27,9 +27,18 @@ If `pnpm dev` fails with `Error: Electron uninstall`, fetch the binary with
 1. Commit to `main` with conventional commits. `feat` bumps minor, `fix` bumps patch
    while pre-1.0; `docs`/`chore` bump nothing.
 2. `release-please.yml` keeps a release PR open with the next version and CHANGELOG. The
-   version is also stamped into the download links in `README.md`, `docs/index.html` and
-   `docs/site.js` through `extra-files` and `x-release-please-version` line annotations
-   (one version per annotated line: the updater rewrites only the first match on a line).
+   version shown on the site is stamped into `docs/index.html` and `docs/site.js` through
+   `extra-files` and the `x-release-please-version` annotations (one version per annotated
+   line: the updater rewrites only the first match on a line).
+
+   Download links carry no version, in README or on the site: they point at
+   `releases/latest/download/<name>`, and `artifactName` in `electron-builder.yml` keeps
+   every asset name the same across releases. This is not just tidiness — release-please
+   _cannot_ stamp a versioned asset name. Its updater reads the `-arm64.dmg` in
+   `space-pixl-0.1.4-arm64.dmg` as a semver prerelease tag and replaces the whole of
+   `0.1.4-arm64.dmg`, leaving a link with no file extension. `tests/assets.test.ts` fails
+   if a version creeps back into an artifact name or a documented link.
+
 3. Merging that PR tags `vX.Y.Z`, creates the GitHub release, and `release.yml` builds
    macOS arm64, macOS x64 and Windows x64 on GitHub-hosted runners, signs and notarizes
    macOS when the secrets exist, and attaches installers plus `latest*.yml` manifests.

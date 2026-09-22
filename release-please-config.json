@@ -31,9 +31,5 @@
   "packages": {
     ".": {}
   },
-  "extra-files": [
-    "README.md",
-    "docs/index.html",
-    "docs/site.js"
-  ]
+  "extra-files": ["docs/index.html", "docs/site.js"]
 }

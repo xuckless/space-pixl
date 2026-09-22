@@ -3,7 +3,15 @@
 appId: com.xuckless.spacepixl
 productName: Space Pixl
 copyright: Copyright © 2026 xuckless
-artifactName: ${name}-${version}-${os}-${arch}.${ext}
+# No ${version} in any artifact name. The README and the Pages site link to
+# `releases/latest/download/<name>`, which only resolves if the name is the
+# same in every release, and release-please cannot stamp a version into these
+# names anyway: its updater reads the `-arm64.dmg` in
+# `space-pixl-0.1.4-arm64.dmg` as a semver prerelease tag and replaces the
+# whole thing, leaving a URL with no file extension. The version lives in the
+# app, in `latest*.yml` and in the release tag. `tests/assets.test.ts` keeps
+# these names and the documented links in step.
+artifactName: ${name}-${os}-${arch}.${ext}
 
 directories:
   buildResources: build
@@ -73,7 +81,7 @@ mac:
     NSDownloadsFolderUsageDescription: Space Pixl scans folders you choose for images.
 
 dmg:
-  artifactName: ${name}-${version}-${arch}.${ext}
+  artifactName: ${name}-mac-${arch}.${ext}
 
 win:
   executableName: space-pixl
@@ -88,7 +96,7 @@ win:
     publisherName: xuckless
 
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${name}-win-x64-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
@@ -113,7 +121,7 @@ linux:
       arch: [x64]
 
 appImage:
-  artifactName: ${name}-${version}-${arch}.${ext}
+  artifactName: ${name}-linux-${arch}.${ext}
 
 # Installers and update manifests are attached to the GitHub release of the
 # tag being built; installed apps poll those releases (the repository is
