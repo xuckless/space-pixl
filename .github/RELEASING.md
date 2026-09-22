@@ -33,7 +33,17 @@ If `pnpm dev` fails with `Error: Electron uninstall`, fetch the binary with
 3. Merging that PR tags `vX.Y.Z`, creates the GitHub release, and `release.yml` builds
    macOS arm64, macOS x64 and Windows x64 on GitHub-hosted runners, signs and notarizes
    macOS when the secrets exist, and attaches installers plus `latest*.yml` manifests.
+   A final `mac-channel` job replaces `latest-mac.yml` with both arches merged.
 4. Installed apps check the release feed on launch and every 4 hours.
+
+**One arch per job.** The engine binding is a platform package that pnpm installs for the
+runner it runs on, so a job can only package its own architecture: anything else ships that
+arch's app around this arch's `.node`, which is how 0.1.4's arm64 build went out carrying the
+x86_64 binding and reported the engine unavailable. So `mac.target` in `electron-builder.yml`
+carries no `arch` list — one would override the CLI flag and package both — `build/after-pack.mjs`
+fails the build if the app and its binding disagree, and `build/merge-mac-channel.mjs` stitches
+the two single-arch `latest-mac.yml` files back into one feed, because electron-updater drops
+every arm64 file on Intel and prefers them on Apple Silicon.
 
 **Channels.** Derived from the version: `0.3.0` → `latest`, `0.3.0-beta.1` → `beta`.
 

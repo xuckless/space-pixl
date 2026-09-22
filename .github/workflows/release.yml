@@ -35,18 +35,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # One architecture per job, and never any other: the engine binding is
+        # a platform package that pnpm installs for the runner it runs on, so
+        # a job that packages another arch ships that arch's app with this
+        # arch's binding. `electron-builder.yml` leaves `arch` out of
+        # `mac.target` so these flags decide, and `build/after-pack.mjs`
+        # refuses a mismatch.
         include:
           - name: macOS arm64
             runner: macos-15
             args: --mac --arm64
+            arch: arm64
           - name: macOS x64
             # Intel runners: macos-13 was retired; macos-15-intel is the
             # current Intel label. Adjust if GitHub renames it.
             runner: macos-15-intel
             args: --mac --x64
+            arch: x64
           - name: Windows x64
             runner: windows-latest
             args: --win --x64
+            arch: x64
     env:
       # actions/setup-node writes ~/.npmrc with an auth placeholder that pnpm
       # expands from this variable (pnpm ignores ${ENV} in a project .npmrc).
@@ -110,3 +119,45 @@ jobs:
           # Look for a Developer ID identity in the keychain when no CSC_LINK
           # is given; finding none yields an unsigned build with a warning.
           CSC_IDENTITY_AUTO_DISCOVERY: ${{ runner.os == 'macOS' && 'true' || 'false' }}
+
+      # Each macOS job's latest-mac.yml lists only the arch it packaged, and
+      # the two jobs overwrite each other's copy on the release. Keep both so
+      # `mac-channel` below can publish one feed covering both.
+      - name: Save this arch's macOS update manifest
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-channel-${{ matrix.arch }}
+          path: dist/latest-mac.yml
+          if-no-files-found: error
+          retention-days: 7
+
+  mac-channel:
+    name: macOS update feed
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mac-channel-*
+          path: mac-channel
+
+      # Both arches in one feed. electron-updater keeps the arm64 file on
+      # Apple Silicon and drops every arm64 file on Intel, so a feed carrying
+      # one arch leaves the other unable to update. The script fails the job
+      # rather than publish such a feed.
+      - name: Merge the per-arch manifests
+        run: |
+          node build/merge-mac-channel.mjs \
+            mac-channel/mac-channel-x64/latest-mac.yml \
+            mac-channel/mac-channel-arm64/latest-mac.yml > latest-mac.yml
+          cat latest-mac.yml
+
+      - name: Replace the manifest on the release
+        run: gh release upload "${{ inputs.tag }}" latest-mac.yml --clobber --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

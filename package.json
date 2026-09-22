@@ -23,7 +23,6 @@
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "pnpm run build && electron-builder --dir",
     "build:win": "pnpm run build && electron-builder --win --x64",
-    "build:mac": "pnpm run build && electron-builder --mac",
     "build:mac:arm64": "pnpm run build && electron-builder --mac --arm64",
     "build:mac:x64": "pnpm run build && electron-builder --mac --x64",
     "test": "node --import ./tests/register.mjs --experimental-strip-types --no-warnings --test tests/*.test.ts"

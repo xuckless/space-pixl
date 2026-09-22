@@ -27,6 +27,26 @@ function send(msg: HostToMain): void {
   process.parentPort.postMessage(msg)
 }
 
+/**
+ * Every message in an error's `cause` chain, outermost first.
+ *
+ * napi's generated loader tries each candidate binding in turn, collects what
+ * each attempt threw and reports only `Cannot find native binding. npm has a
+ * bug related to optional dependencies...` — advice about `npm i` that says
+ * nothing about a packaged app. The real reason (a missing platform package,
+ * an addon built for the other architecture, a dylib that would not load) is
+ * in the chain underneath, so keep it.
+ */
+function causeChain(err: unknown, depth = 0): string[] {
+  if (!(err instanceof Error) || depth > 6) return []
+  const { cause } = err as Error & { cause?: unknown }
+  const causes = Array.isArray(cause) ? cause : cause === undefined ? [] : [cause]
+  return causes.flatMap((c) => {
+    const message = c instanceof Error ? c.message : String(c)
+    return [message, ...causeChain(c, depth + 1)]
+  })
+}
+
 function loadNative(): { engine: PixlEngineModule } | { reason: string } {
   try {
     const require = createRequire(__filename)
@@ -38,12 +58,16 @@ function loadNative(): { engine: PixlEngineModule } | { reason: string } {
     return { engine: mod as PixlEngineModule }
   } catch (err) {
     const e = err as NodeJS.ErrnoException
+    const where = `${process.platform}-${process.arch}`
     if (e.code === 'MODULE_NOT_FOUND') {
-      return {
-        reason: `${ENGINE_PACKAGE} is not installed for ${process.platform}-${process.arch}`
-      }
+      return { reason: `${ENGINE_PACKAGE} is not installed for ${where}` }
     }
-    return { reason: `${ENGINE_PACKAGE} failed to load: ${e.message}` }
+    const detail = causeChain(e)
+    return {
+      reason:
+        `${ENGINE_PACKAGE} failed to load on ${where}: ${e.message}` +
+        (detail.length > 0 ? ` (${detail.join('; ')})` : '')
+    }
   }
 }
 

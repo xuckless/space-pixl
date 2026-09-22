@@ -22,9 +22,11 @@ files:
 # Native addons cannot be loaded from inside the asar archive. The engine
 # binding ships as `@xuckless/pixl-engine` plus one platform package
 # (`@xuckless/pixl-engine-darwin-arm64`, `-darwin-x64`, `-win32-x64-msvc`)
-# holding the `.node` file. electron-builder includes only the optional
-# platform package matching the build's --arch, so per-arch builds each
-# carry exactly one binary.
+# holding the `.node` file. Only the platform package matching the build host
+# is installed, and electron-builder bundles just that one, so every build
+# carries exactly one binary — the one for the host that packaged it. That is
+# why a job must never package an arch other than its own: see the `arch`
+# note on `mac.target` below, which `afterPack` now enforces.
 asarUnpack:
   - resources/**
   - '**/*.node'
@@ -35,14 +37,25 @@ asarUnpack:
 npmRebuild: false
 nodeGypRebuild: false
 
+# Fails the build before anything is signed, zipped or uploaded when the
+# packaged app carries a binding for the wrong platform or arch, or more than
+# one of them.
+afterPack: ./build/after-pack.mjs
+
 mac:
   category: public.app-category.photography
   target:
     # zip is what electron-updater downloads; dmg is what people install from.
+    #
+    # No `arch` here on purpose. A list would *override* the CLI flags, so
+    # `electron-builder --mac --arm64` would package both arches from one
+    # runner: each would get the binding of the host that built it, and the
+    # two release jobs would overwrite each other's assets in the GitHub
+    # release (that shipped an arm64 0.1.4 carrying the x86_64 binding).
+    # Arch comes from the CLI instead — one arch per job, matching the runner.
+    # Without a flag electron-builder defaults to x64, so pass one explicitly.
     - target: dmg
-      arch: [arm64, x64]
     - target: zip
-      arch: [arm64, x64]
   hardenedRuntime: true
   gatekeeperAssess: false
   entitlements: build/entitlements.mac.plist
