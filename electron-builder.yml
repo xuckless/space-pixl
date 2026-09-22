@@ -17,6 +17,7 @@ files:
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml,pnpm-workspace.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
   - '!{.github,release-please-config.json,.release-please-manifest.json}'
+  - '!docs/**'
 
 # Native addons cannot be loaded from inside the asar archive. The engine
 # binding ships as `@xuckless/pixl-engine` plus one platform package
