@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Space Pixl</title>
+    <meta
+      name="description"
+      content="Space Pixl reclaims storage by re-encoding your photo library with the PIXL engine. Same photos, a fraction of the space. macOS and Windows."
+    />
+    <meta name="theme-color" content="#0b0d11" />
+    <meta property="og:title" content="Space Pixl" />
+    <meta
+      property="og:description"
+      content="Reclaim your photo library. Same photos, a fraction of the space. Built on the PIXL engine."
+    />
+    <meta
+      property="og:image"
+      content="https://xuckless.github.io/space-pixl/screenshots/optimise-preview.webp"
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="favicon.ico" sizes="any" />
+    <link rel="icon" href="icon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap"
+    />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="wrap">
+        <div class="header-left">
+          <a class="brand" href="#top" aria-label="Space Pixl">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="4" stroke="#e8ebf2" stroke-width="1.6" />
+              <rect x="7" y="7" width="4" height="4" rx="1" fill="#93a4ff" />
+              <rect x="13" y="7" width="4" height="4" rx="1" fill="#3a4152" />
+              <rect x="7" y="13" width="4" height="4" rx="1" fill="#3a4152" />
+              <rect x="13" y="13" width="4" height="4" rx="1" fill="#93a4ff" />
+            </svg>
+            <span class="brand-name">Space Pixl</span>
+            <span class="version" data-version>v0.1.4</span><!-- x-release-please-version -->
+          </a>
+          <nav class="tabs" aria-label="Sections">
+            <a class="tab on" href="#how" data-nav="how">How it works</a>
+            <a class="tab" href="#savings" data-nav="savings">Savings</a>
+            <a class="tab" href="#engine" data-nav="engine">Engine</a>
+            <a class="tab" href="#download" data-nav="download">Download</a>
+          </nav>
+        </div>
+        <a class="status" href="https://github.com/xuckless/space-pixl" title="Source on GitHub">
+          <span class="dot" aria-hidden="true"></span>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </header>
+
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="i-apple" viewBox="0 0 24 24">
+        <path
+          d="M16.4 12.7c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 2.9-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.2-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8 0 0-2.6-1-2.6-3.8zM14 5.6c.7-.8 1.1-1.9 1-3.1-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.6 2.9-1.4z"
+        />
+      </symbol>
+      <symbol id="i-win" viewBox="0 0 24 24">
+        <path
+          d="M3 5.5l7.4-1v7H3zm8.4-1.2L21 3v8.5h-9.6zM3 12.5h7.4v7L3 18.5zm8.4 0H21V21l-9.6-1.3z"
+        />
+      </symbol>
+    </svg>
+    <main id="top">
+      <!-- ── Hero ─────────────────────────────────────────────────────── -->
+      <section class="hero">
+        <div class="wrap">
+          <p class="eyebrow">A storage optimiser for photo libraries</p>
+          <h1>Reclaim your photo library.<br /><em>Same photos, a fraction of the space.</em></h1>
+          <p class="lead">
+            Space Pixl looks at each photo, tells you what it can honestly save, previews the real
+            encode before you commit, and writes the result beside the original. Nothing is
+            overwritten. Nothing is guessed.
+          </p>
+          <div class="cta">
+            <a class="btn" id="cta-primary" href="#download">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                aria-hidden="true"
+              >
+                <path d="M12 4v12m0 0l-5-5m5 5l5-5M4 20h16" />
+              </svg>
+              <span id="cta-primary-label">Download</span>
+              <span class="sub" id="cta-primary-sub"></span>
+            </a>
+            <a class="btn2" href="#download">All downloads</a>
+            <a class="btn2" href="https://github.com/xuckless/space-pixl/releases" rel="noopener"
+              >Release notes</a
+            >
+            <p class="cta-note">
+              macOS 13+ (Apple Silicon and Intel) and Windows 10/11 x64. Builds are currently
+              unsigned, so first launch takes one extra step. <a href="#download">See install.</a>
+            </p>
+          </div>
+          <div class="frame rise">
+            <img
+              src="screenshots/optimise-preview.webp"
+              width="2480"
+              height="1720"
+              alt="Space Pixl showing a 7.67 MB JPEG previewed as a 6.24 MB JPEG XL repack, split before and after, with the recommendation panel on the left"
+              fetchpriority="high"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- ── How it works ─────────────────────────────────────────────── -->
+      <section id="how">
+        <div class="wrap">
+          <p class="eyebrow">How it works</p>
+          <h2 class="h2">Five steps. The only one that changes a file is the last.</h2>
+          <p class="lead">
+            Every decision lives in the app and is shown to you. The engine underneath just does
+            exactly what it is asked and reports back what happened.
+          </p>
+          <div class="grid c5">
+            <div class="card step rise">
+              <div class="num">01 · Analyse</div>
+              <h3>Read the file</h3>
+              <p>
+                Format, pixels, bit depth, colour profile, metadata, and how it was encoded in the
+                first place.
+              </p>
+            </div>
+            <div class="card step rise">
+              <div class="num">02 · Recommend</div>
+              <h3>Rank the options</h3>
+              <p>
+                A verdict and a shortlist with expected savings, drawn from measured results, not a
+                slider labelled "quality".
+              </p>
+            </div>
+            <div class="card step rise">
+              <div class="num">03 · Dial in</div>
+              <h3>Every knob, if you want it</h3>
+              <p>
+                Encoder settings, resize, depth and channels, metadata carry-over, colour policy,
+                RAW development, dither.
+              </p>
+            </div>
+            <div class="card step rise">
+              <div class="num">04 · Preview</div>
+              <h3>See the real encode</h3>
+              <p>
+                Each change runs the actual encoder to a temp file. The size you see is the file's
+                size; the pixels are the file's pixels.
+              </p>
+            </div>
+            <div class="card step rise">
+              <div class="num">05 · Convert</div>
+              <h3>Beside the original</h3>
+              <p>
+                <code>IMG_0042.jxl</code> lands next to <code>IMG_0042.jpg</code>. The original is
+                never touched, never overwritten.
+              </p>
+            </div>
+          </div>
+          <div class="chips">
+            <span class="chip ok">✓ bit-exact JPEG → JPEG XL repack, fully reversible</span>
+            <span class="chip">metadata copied verbatim, never rewritten</span>
+            <span class="chip">colour description always matches the pixels</span>
+            <span class="chip"
+              >the engine runs in its own process: a crash restarts the worker, not the app</span
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Savings ──────────────────────────────────────────────────── -->
+      <section id="savings">
+        <div class="wrap">
+          <p class="eyebrow">What you save</p>
+          <h2 class="h2">Measured on real files, not quoted from a datasheet.</h2>
+          <p class="lead">
+            One 8.04 MB JPEG from the engine's test fixtures, re-encoded every way it offers. Drag
+            the slider to scale those ratios to your own library.
+          </p>
+          <div class="calc">
+            <div class="card">
+              <label for="gb">My photo library is about</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="gb"
+                  min="5"
+                  max="2000"
+                  step="5"
+                  value="200"
+                  aria-label="Library size in gigabytes"
+                />
+                <input
+                  type="number"
+                  class="field"
+                  id="gb-field"
+                  min="1"
+                  max="100000"
+                  value="200"
+                  aria-label="Library size in gigabytes"
+                />
+                <span class="mono muted">GB</span>
+              </div>
+              <div class="seg" role="group" aria-label="Target format">
+                <button type="button" class="on" data-target="jxl">JPEG XL repack</button>
+                <button type="button" data-target="avif">AVIF</button>
+                <button type="button" data-target="webp">WebP</button>
+                <button type="button" data-target="jxl1">JPEG XL d1</button>
+              </div>
+              <div class="hero-value">
+                <span class="big" id="saved">37.0</span>
+                <span class="unit">GB reclaimed</span>
+                <span class="chip ok" id="saved-pct">−18.5%</span>
+              </div>
+              <div class="ratio" aria-hidden="true">
+                <div class="keep" id="keep" style="width: 81.5%"></div>
+              </div>
+              <p class="foot" id="foot">
+                Bit-exact and reversible: the original JPEG can be restored byte for byte at any
+                time.
+              </p>
+            </div>
+            <div class="card">
+              <label>The same 8.04 MB JPEG, eight ways</label>
+              <div class="bars" id="bars"></div>
+              <p class="foot">
+                Apple M2 Pro, release build. AVIF q60, WebP q80, JPEG XL distance 1 effort 7, HEIC
+                q80. The HEIC and PNG bars go the wrong way on purpose: the app will tell you when a
+                conversion is not worth it.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Gallery ──────────────────────────────────────────────────── -->
+      <section id="tour">
+        <div class="wrap">
+          <p class="eyebrow">In the app</p>
+          <h2 class="h2">Every number on screen came out of the engine.</h2>
+          <div class="gallery" id="gallery">
+            <button type="button" class="shot rise" data-i="0">
+              <img
+                loading="lazy"
+                src="screenshots/optimise-preview.webp"
+                width="2480"
+                height="1720"
+                alt="Recommendation and split preview"
+              />
+              <div class="cap">
+                <b>Recommend and preview.</b> A verdict, ranked candidates, and the real encode
+                split against the source.
+              </div>
+            </button>
+            <button type="button" class="shot rise" data-i="1">
+              <img
+                loading="lazy"
+                src="screenshots/optimise-analysis.webp"
+                width="2480"
+                height="1720"
+                alt="Analysis panel"
+              />
+              <div class="cap">
+                <b>Analysis.</b> What the file is, how it was made, and what its pixels look like.
+              </div>
+            </button>
+            <button type="button" class="shot rise" data-i="2">
+              <img
+                loading="lazy"
+                src="screenshots/optimise-dials.webp"
+                width="2480"
+                height="1720"
+                alt="Dials panel"
+              />
+              <div class="cap">
+                <b>Dials.</b> The whole converter surface, with the parts a target does not use
+                greyed out.
+              </div>
+            </button>
+            <button type="button" class="shot rise" data-i="3">
+              <img
+                loading="lazy"
+                src="screenshots/optimise-converted.webp"
+                width="2480"
+                height="1720"
+                alt="Converted result"
+              />
+              <div class="cap">
+                <b>Converted.</b> Saved 1.43 MB in 354 ms, written beside the original.
+              </div>
+            </button>
+            <button type="button" class="shot rise" data-i="4">
+              <img
+                loading="lazy"
+                src="screenshots/stats.webp"
+                width="2480"
+                height="1720"
+                alt="Stats page"
+              />
+              <div class="cap">
+                <b>Stats.</b> Lifetime storage reclaimed, reductions, engine time, per day.
+              </div>
+            </button>
+            <button type="button" class="shot rise" data-i="5">
+              <img
+                loading="lazy"
+                src="screenshots/stats-formats.webp"
+                width="2480"
+                height="1720"
+                alt="Stats by format"
+              />
+              <div class="cap">
+                <b>By format.</b> Where the savings came from and the biggest single wins.
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Engine ───────────────────────────────────────────────────── -->
+      <section id="engine">
+        <div class="wrap">
+          <p class="eyebrow">Meet the PIXL engine</p>
+          <h2 class="h2">
+            An image engine that does exactly what you tell it, and tells you exactly what it did.
+          </h2>
+          <p class="lead">
+            PIXL is the part of a photo app that touches pixels. It opens image files, changes them,
+            and writes them back out. It is written in Rust, ships as compiled binaries for macOS
+            and Windows, and Space Pixl is one of the apps built on it.
+          </p>
+          <div class="engine-hero">
+            <div>
+              <p class="quote">
+                PIXL makes no decisions. You say the format, the size, the quality, the colour
+                space, the look. It does that, exactly, and hands you a receipt. If what you asked
+                for is impossible, it refuses and names the setting to change. It never quietly does
+                something else instead.
+              </p>
+              <p class="lead" style="margin-top: 18px; font-size: 15px">
+                Most image libraries guess: pick a quality for you, fall back to a different codec,
+                drop your transparency, re-encode a photo you thought was being copied. PIXL has no
+                guesses to go wrong. The one thing it is opinionated about is honesty: it will not
+                write a file whose colour description disagrees with its pixels.
+              </p>
+            </div>
+            <svg
+              class="diagram"
+              viewBox="0 0 520 300"
+              role="img"
+              aria-label="Four calls: probe, analyze and suggest_encode inform your app; convert does the work and returns a report"
+            >
+              <defs>
+                <marker
+                  id="arr"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0L10 5L0 10z" fill="#5f6b86" />
+                </marker>
+              </defs>
+              <rect class="box" x="10" y="120" width="96" height="60" rx="10" />
+              <text x="58" y="146" text-anchor="middle">a file</text>
+              <text class="s" x="58" y="163" text-anchor="middle">or a byte buffer</text>
+
+              <rect class="box" x="150" y="20" width="110" height="46" rx="10" />
+              <text class="m" x="205" y="48" text-anchor="middle">probe()</text>
+              <rect class="box" x="150" y="127" width="110" height="46" rx="10" />
+              <text class="m" x="205" y="155" text-anchor="middle">analyze()</text>
+              <rect class="box" x="150" y="234" width="110" height="46" rx="10" />
+              <text class="m" x="205" y="262" text-anchor="middle" font-size="10.5">
+                suggest_encode()
+              </text>
+
+              <rect class="box you" x="300" y="98" width="120" height="104" rx="12" />
+              <text x="360" y="130" text-anchor="middle" font-weight="600">your app decides</text>
+              <text class="s" x="360" y="150" text-anchor="middle">worth converting?</text>
+              <text class="s" x="360" y="166" text-anchor="middle">
+                which format? what quality?
+              </text>
+              <text class="s" x="360" y="182" text-anchor="middle">which colour policy?</text>
+
+              <rect class="box out" x="440" y="60" width="72" height="46" rx="10" />
+              <text class="m" x="476" y="88" text-anchor="middle">convert()</text>
+              <rect class="box" x="440" y="150" width="72" height="40" rx="10" />
+              <text x="476" y="175" text-anchor="middle">output</text>
+              <rect class="box" x="440" y="208" width="72" height="40" rx="10" />
+              <text x="476" y="233" text-anchor="middle">receipt</text>
+
+              <path
+                class="edge"
+                d="M106 150 H128 Q138 150 138 140 V53 Q138 43 148 43"
+                marker-end="url(#arr)"
+              />
+              <path class="edge dash" d="M106 150 H148" marker-end="url(#arr)" />
+              <path
+                class="edge dash"
+                d="M106 150 H128 Q138 150 138 160 V247 Q138 257 148 257"
+                marker-end="url(#arr)"
+              />
+              <path
+                class="edge"
+                d="M260 43 H280 Q290 43 290 53 V140 Q290 150 298 150"
+                marker-end="url(#arr)"
+              />
+              <path class="edge dash" d="M260 150 H298" marker-end="url(#arr)" />
+              <path
+                class="edge dash"
+                d="M260 257 H280 Q290 257 290 247 V160 Q290 150 298 150"
+                marker-end="url(#arr)"
+              />
+              <path
+                class="edge"
+                d="M420 150 H428 Q436 150 436 140 V93 Q436 83 438 83"
+                marker-end="url(#arr)"
+              />
+              <path class="edge" d="M476 106 V148" marker-end="url(#arr)" />
+              <path class="edge" d="M476 190 V206" marker-end="url(#arr)" />
+            </svg>
+          </div>
+
+          <div class="etabs" role="tablist" aria-label="Engine capabilities">
+            <button type="button" class="tab on" role="tab" data-tab="formats" aria-selected="true">
+              Formats
+            </button>
+            <button type="button" class="tab" role="tab" data-tab="colour" aria-selected="false">
+              Colour
+            </button>
+            <button type="button" class="tab" role="tab" data-tab="raw" aria-selected="false">
+              RAW
+            </button>
+            <button type="button" class="tab" role="tab" data-tab="hdr" aria-selected="false">
+              HDR
+            </button>
+            <button type="button" class="tab" role="tab" data-tab="receipts" aria-selected="false">
+              Receipts
+            </button>
+            <button type="button" class="tab" role="tab" data-tab="built" aria-selected="false">
+              Built on
+            </button>
+          </div>
+
+          <div class="epanel on" data-panel="formats" role="tabpanel">
+            <h3>Every pixel format converts to every other one</h3>
+            <p>
+              With resizing (nearest, bilinear, Catmull-Rom, Lanczos3, or a super-resolution model
+              you supply), explicit bit-depth and channel control, optional linear-light resampling,
+              and metadata carried across container boundaries.
+            </p>
+            <table>
+              <tr>
+                <th>Reads</th>
+                <th>Writes</th>
+              </tr>
+              <tr>
+                <td>JPEG · PNG · HEIF / HEIC / AVIF · JPEG XL · TIFF · WebP · RAW</td>
+                <td>JPEG · PNG · AVIF · JPEG XL · TIFF · WebP · DNG</td>
+              </tr>
+            </table>
+            <p style="margin-top: 14px">
+              Two paths are bit-exact: the JPEG → JPEG XL repack (about 19% smaller, no pixel ever
+              decoded, reversible) and a same-format copy when nothing needs to change. HEIC input
+              is read; HEIC output is not offered in Space Pixl.
+            </p>
+          </div>
+
+          <div class="epanel" data-panel="colour" role="tabpanel">
+            <h3>Colour, resolved in a stated order</h3>
+            <p>
+              Embedded ICC profile → CICP code points → the format's own default. Then one of four
+              policies you name, never a guess:
+            </p>
+            <table>
+              <tr>
+                <th>Policy</th>
+                <th>What it does</th>
+              </tr>
+              <tr>
+                <td>Preserve</td>
+                <td>keep the description, never touch a pixel</td>
+              </tr>
+              <tr>
+                <td>Assign</td>
+                <td>relabel the pixels with a colour space you assert, without converting them</td>
+              </tr>
+              <tr>
+                <td>ConvertTo</td>
+                <td>convert the pixels into a named colour space through Little CMS</td>
+              </tr>
+              <tr>
+                <td>ToneMap</td>
+                <td>
+                  bring an HDR source down to SDR with an operator and both peaks that you name
+                </td>
+              </tr>
+            </table>
+            <p style="margin-top: 14px">
+              Pixels are rounded once, and the report says so. Resampling can be done in linear
+              light, which fixes the dark fringes and haloes that gamma-space resizing produces on
+              hard edges.
+            </p>
+          </div>
+
+          <div class="epanel" data-panel="raw" role="tabpanel">
+            <h3>RAW, developed or archived</h3>
+            <p>
+              A camera RAW can be developed in linear light (physically correct numbers, the right
+              input for grading), developed straight to the sRGB curve, or read through the camera's
+              own embedded preview when speed matters more than control.
+            </p>
+            <table>
+              <tr>
+                <th>Path</th>
+                <th>Measured</th>
+              </tr>
+              <tr>
+                <td>Canon CR2 → DNG, lossless</td>
+                <td>35.67 MB → 30.77 MB in 0.51 s, sensor mosaic preserved</td>
+              </tr>
+              <tr>
+                <td>CR2 → develop → JPEG q92</td>
+                <td>35.67 MB → 5.40 MB in 0.83 s</td>
+              </tr>
+              <tr>
+                <td>CR2 → embedded preview → JPEG q92</td>
+                <td>35.67 MB → 5.79 MB in 0.42 s</td>
+              </tr>
+            </table>
+            <p style="margin-top: 14px">
+              For archives, RAW → DNG is the safe move: lossless, smaller, and readable by
+              everything.
+            </p>
+          </div>
+
+          <div class="epanel" data-panel="hdr" role="tabpanel">
+            <h3>HDR is refused until you say how</h3>
+            <p>
+              HDR photos carry brightness a normal screen cannot show. Squashing it down is tone
+              mapping, and there is no correct answer, only answers that suit different content. An
+              HDR source bound for an SDR output is an error unless tone mapping is requested
+              explicitly, with the operator and both peaks named.
+            </p>
+            <pre>
+error: unsupported: hdr → sdr — the source uses PQ (SMPTE ST 2084); a
+standard-dynamic-range output needs ColorPolicy::ToneMap, which names the
+operator and both peaks. Otherwise request an HDR-capable sink (JXL, AVIF,
+HEIC, PNG), or assign an SDR colour space with ColorPolicy::Assign if the
+pixels are not really HDR.</pre>
+            <p style="margin-top: 14px">
+              PQ and HLG files survive untouched into HDR-capable sinks. Errors name the field to
+              change.
+            </p>
+          </div>
+
+          <div class="epanel" data-panel="receipts" role="tabpanel">
+            <h3>Every conversion returns a report</h3>
+            <p>
+              Which decoder and encoder ran, whether the path was bit-exact, how the colour was
+              resolved, which metadata blocks were carried, the output's dimensions, depth and
+              channels, and the time each stage took. Space Pixl shows these as the chips under the
+              preview: <span class="chip ok">✓ bit-exact copy</span>
+              <span class="chip">embedded ICC profile · ICC</span>
+              <span class="chip">metadata: exif icc xmp iptc</span>
+            </p>
+            <p>
+              The same honesty applies before the work: <code>analyze()</code> returns per-channel
+              histograms, clipping percentages and grey-world gains, so an "Auto" button is numbers
+              you can print, not a decision made for you.
+            </p>
+          </div>
+
+          <div class="epanel" data-panel="built" role="tabpanel">
+            <h3>What it is built on</h3>
+            <table>
+              <tr>
+                <th>Job</th>
+                <th>Library</th>
+              </tr>
+              <tr>
+                <td>JPEG</td>
+                <td>libjpeg-turbo, SIMD, built from vendored source</td>
+              </tr>
+              <tr>
+                <td>PNG</td>
+                <td>the <code>png</code> crate, native depth and colour type preserved</td>
+              </tr>
+              <tr>
+                <td>HEIF / HEIC / AVIF</td>
+                <td>libheif with aom, 8/10/12-bit</td>
+              </tr>
+              <tr>
+                <td>JPEG XL</td>
+                <td>an in-house wrapper over libjxl</td>
+              </tr>
+              <tr>
+                <td>TIFF</td>
+                <td>the <code>tiff</code> crate in, rawler's writer out</td>
+              </tr>
+              <tr>
+                <td>WebP</td>
+                <td>libwebp</td>
+              </tr>
+              <tr>
+                <td>RAW + DNG</td>
+                <td>rawler (the DNGLab writer)</td>
+              </tr>
+              <tr>
+                <td>Colour management</td>
+                <td>Little CMS, vendored</td>
+              </tr>
+              <tr>
+                <td>Resampling</td>
+                <td>fast_image_resize, SIMD, 8- and 16-bit</td>
+              </tr>
+              <tr>
+                <td>Upscaling</td>
+                <td>ONNX Runtime, loaded dynamically, model supplied by the app</td>
+              </tr>
+            </table>
+            <p style="margin-top: 14px">
+              One Rust interface with Swift, Kotlin and Node bindings. In Space Pixl the Node
+              binding runs inside an Electron utility process.
+            </p>
+          </div>
+
+          <div class="never">
+            <h3 style="font-size: 20px">What PIXL will never do for you</h3>
+            <p class="muted" style="margin-top: 6px">
+              This list is the feature, not a disclaimer. Every item is a judgement call that
+              belongs to the app that knows its users.
+            </p>
+            <ul>
+              <li>Route by file extension, or re-sniff a file you already told it about</li>
+              <li>Decide a quality, an effort level or a codec</li>
+              <li>Decide whether a conversion is worth it</li>
+              <li>Pick a tone-mapping operator or invent a mastering peak</li>
+              <li>Press "Auto"</li>
+              <li>Fall back to a second-best path when the first fails</li>
+              <li>Clamp anything to what it guesses your device can handle</li>
+              <li>Drop your alpha channel or halve your bit depth to make a request succeed</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Playroom teaser ──────────────────────────────────────────── -->
+      <section id="playroom">
+        <div class="wrap">
+          <p class="eyebrow">Coming next</p>
+          <h2 class="h2">Space Pixl is one way to use the engine. The next one is an editor.</h2>
+          <div class="tease rise">
+            <div>
+              <span class="chip ac">PIXL Playroom · in development</span>
+              <h3>A Lightroom alternative, built on the same honest engine.</h3>
+              <p>
+                Sliders, looks and presets. White balance and exposure in linear light where they
+                belong, curves and HSL where the eye lives, film LUTs at any strength, RAW developed
+                properly, HDR delivered on purpose. Every edit is a named operation in a named
+                colour space, and presets are plain JSON you can read and share.
+              </p>
+              <p style="margin-top: 14px">
+                No date yet. Watch the
+                <a href="https://github.com/xuckless/space-pixl">space-pixl repository</a> for the
+                announcement.
+              </p>
+            </div>
+            <div class="knobs" aria-label="Grading operations">
+              <div class="knob">White balance <span class="mono">temp · tint</span></div>
+              <div class="knob">
+                Exposure &amp; contrast <span class="mono">lift · gamma · gain</span>
+              </div>
+              <div class="knob">Tone <span class="mono">highlights · shadows</span></div>
+              <div class="knob">Curves <span class="mono">master · per channel</span></div>
+              <div class="knob">HSL bands <span class="mono">8 colours</span></div>
+              <div class="knob">Vibrance <span class="mono">skin protected</span></div>
+              <div class="knob">Film looks <span class="mono">.cube LUT</span></div>
+              <div class="knob">Noise reduction <span class="mono">luma · colour</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Download ─────────────────────────────────────────────────── -->
+      <!-- x-release-please-start-version -->
+      <section id="download">
+        <div class="wrap">
+          <p class="eyebrow">Install</p>
+          <h2 class="h2">Download <span data-version>v0.1.4</span></h2>
+          <p class="lead">
+            Installers are attached to each GitHub release. The app checks for updates on launch and
+            every four hours.
+          </p>
+          <div class="banner" style="margin-top: 22px">
+            <span aria-hidden="true">⚠</span>
+            <span>
+              Builds are not yet code-signed. macOS will say the app is
+              <em>"damaged and can't be opened"</em> and Windows SmartScreen will warn. Both are the
+              standard notices for an unsigned download; the steps below get past them. Signed
+              builds are planned.
+            </span>
+          </div>
+          <div class="dl">
+            <div class="card" id="dl-mac">
+              <h3>
+                <svg width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <use href="#i-apple" />
+                </svg>
+                macOS
+              </h3>
+              <div class="links">
+                <a
+                  class="btn"
+                  data-asset="mac-arm64"
+                  href="https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-0.1.4-arm64.dmg"
+                  >Apple Silicon <span class="sub">.dmg</span></a
+                >
+                <a
+                  class="btn2"
+                  data-asset="mac-x64"
+                  href="https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-0.1.4-x64.dmg"
+                  >Intel <span class="sub">.dmg</span></a
+                >
+              </div>
+              <ol>
+                <li>
+                  Open the <code>.dmg</code> and drag <b>Space Pixl</b> to <b>Applications</b>.
+                </li>
+                <li>
+                  Clear the quarantine flag once (this is what the "damaged" dialog is about):
+                  <pre>xattr -dr com.apple.quarantine "/Applications/Space Pixl.app"</pre>
+                </li>
+                <li>Open Space Pixl from Applications.</li>
+              </ol>
+              <p class="meta">
+                M1 or newer → Apple Silicon. Not sure? → About This Mac → Chip. Until builds are
+                signed, macOS updates are a re-download from the releases page.
+              </p>
+            </div>
+            <div class="card" id="dl-win">
+              <h3>
+                <svg width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <use href="#i-win" />
+                </svg>
+                Windows
+              </h3>
+              <div class="links">
+                <a
+                  class="btn"
+                  data-asset="win-x64"
+                  href="https://github.com/xuckless/space-pixl/releases/latest/download/space-pixl-0.1.4-setup.exe"
+                  >Windows x64 <span class="sub">.exe</span></a
+                >
+              </div>
+              <ol>
+                <li>
+                  Run <code data-asset-name="win-x64">space-pixl-0.1.4-setup.exe</code>. It installs
+                  per user, no admin prompt.
+                </li>
+                <li>If SmartScreen appears, click <b>More info</b>, then <b>Run anyway</b>.</li>
+                <li>
+                  Space Pixl opens when the installer finishes and updates itself in the background
+                  from then on.
+                </li>
+              </ol>
+              <p class="meta">Windows 10 or 11, 64-bit. Linux is not shipped.</p>
+            </div>
+          </div>
+          <p class="release-line" id="release-line">
+            Latest release:
+            <a href="https://github.com/xuckless/space-pixl/releases/latest">v0.1.4 on GitHub</a>.
+          </p>
+        </div>
+      </section>
+      <!-- x-release-please-end-version -->
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <span>Copyright © 2026 xuckless. All rights reserved.</span>
+        <span>
+          Source published for reference at
+          <a href="https://github.com/xuckless/space-pixl">github.com/xuckless/space-pixl</a>. The
+          PIXL engine is a separate, closed component.
+        </span>
+      </div>
+    </footer>
+
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot">
+      <button type="button" class="x" id="lb-close" aria-label="Close">×</button>
+      <button type="button" class="prev" id="lb-prev" aria-label="Previous">‹</button>
+      <img id="lb-img" src="" alt="" />
+      <button type="button" class="next" id="lb-next" aria-label="Next">›</button>
+      <div class="cap" id="lb-cap"></div>
+    </div>
+
+    <script src="site.js" defer></script>
+  </body>
+</html>
