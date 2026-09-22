@@ -28,5 +28,13 @@ export default defineConfig(
       ...eslintPluginReactRefresh.configs.vite.rules
     }
   },
+  {
+    // electron-builder imports the hooks in build/ as plain JavaScript at
+    // package time, so they cannot carry type annotations.
+    files: ['build/**/*.mjs'],
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'off'
+    }
+  },
   eslintConfigPrettier
 )
