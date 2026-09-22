@@ -9,13 +9,3 @@ allowBuilds:
 # scope is exempt; everything else keeps the delay.
 minimumReleaseAgeExclude:
   - '@xuckless/*'
-# Install the engine's platform package for both CPUs of the current OS, so
-# the arm64 MacBook that builds the x64 app also has
-# @xuckless/pixl-engine-darwin-x64. electron-builder keeps only the package
-# matching --arch in each bundle.
-supportedArchitectures:
-  os:
-    - current
-  cpu:
-    - x64
-    - arm64

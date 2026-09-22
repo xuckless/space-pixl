@@ -84,11 +84,11 @@ nsis:
   differentialPackage: true
 
 # Linux is a local testing target, not a shipped one: nothing publishes it and
-# the engine ships no Linux platform package. `pnpm engine:linux` compiles the
-# binding from the sibling pixl-engine checkout and drops the .node beside the
-# installed package, where the engine's loader looks first; asarUnpack above
-# then carries it into the build. AppImage runs anywhere (needs libfuse2), and
-# dist/linux-unpacked/space-pixl runs straight from the tree.
+# the engine ships no Linux platform package. When a Linux build of the
+# binding is dropped beside the installed package (where the engine's loader
+# looks first), `asarUnpack` above carries it into the build; without one the
+# app runs with the placeholder engine. AppImage runs anywhere (needs
+# libfuse2), and dist/linux-unpacked/space-pixl runs straight from the tree.
 linux:
   executableName: space-pixl
   category: Graphics
@@ -101,31 +101,17 @@ linux:
 appImage:
   artifactName: ${name}-${version}-${arch}.${ext}
 
-# Update assets live on the Cloudflare R2 bucket `shipment`. Two entries:
-# the first (generic) is what gets compiled into the app as its update feed,
-# because R2's S3 endpoint (*.r2.cloudflarestorage.com) only answers signed
-# requests, while the bucket's public URL serves objects anonymously. The
-# second (s3) is what electron-builder uploads through; a generic provider is
-# never uploaded to. Publishing needs AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
-# (an R2 API token) in the environment. The bucket and URLs are spelled out
-# because electron-builder does not expand ${env.*} in this block (a first
-# release went out addressed to the literal macro). The channel is derived
-# from the version: 0.2.0 → latest.yml, 0.2.0-beta.1 → beta.yml, so
-# prereleases never reach stable users.
+# Installers and update manifests are attached to the GitHub release of the
+# tag being built; installed apps poll those releases (the repository is
+# public, so electron-updater needs no token). release-please has already
+# published the release when the build runs, so `releaseType: release` makes
+# electron-builder upload to it instead of drafting a new one (a published
+# release older than two hours is refused unless EP_GH_IGNORE_TIME is set,
+# which release.yml does). The channel is derived from the version: 0.2.0 →
+# latest.yml, 0.2.0-beta.1 → beta.yml on a prerelease, so prereleases never
+# reach stable users.
 publish:
-  - provider: generic
-    # Public bucket URL (r2.dev is rate-limited and meant for development;
-    # swap in a custom domain attached to the bucket before wide release).
-    url: https://pub-a43a48ef06ba489fb058d7378d921856.r2.dev/space-pixl
-    # Cloudflare only honours single-range requests, so skip the multi-range
-    # attempt electron-updater makes for differential downloads.
-    useMultipleRangeRequest: false
-  - provider: s3
-    endpoint: https://cc84ce804f5409f094e6376fcc9fdb3b.r2.cloudflarestorage.com
-    region: auto
-    bucket: shipment
-    path: /space-pixl
-    # R2 has no object ACLs; visibility comes from the bucket's public access
-    # setting. null stops the publisher sending an x-amz-acl header.
-    acl: null
-    forcePathStyle: true
+  provider: github
+  owner: xuckless
+  repo: space-pixl
+  releaseType: release

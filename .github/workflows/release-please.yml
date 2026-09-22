@@ -2,8 +2,8 @@ name: Release Please
 
 # On every push to main, release-please maintains a release PR that bumps
 # package.json and CHANGELOG.md from conventional commits. Merging that PR
-# creates the tag and GitHub release, and this workflow then builds and
-# publishes the installers for it.
+# creates the tag and GitHub release, and this workflow then builds the
+# installers and attaches them to that release.
 
 on:
   push:
@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   release-please:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}

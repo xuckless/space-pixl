@@ -5,14 +5,21 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   check:
-    name: Typecheck · lint · build
-    runs-on: [self-hosted, Linux, X64]
+    name: Typecheck, lint, build
+    # The engine binding is a private package on GitHub Packages, and secrets
+    # are not handed to workflows triggered from forks, so a fork's PR could
+    # not install anyway. Only this repository's own branches run CI.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -37,4 +44,5 @@ jobs:
 
       - run: pnpm typecheck
       - run: pnpm lint
+      - run: pnpm test
       - run: pnpm exec electron-vite build

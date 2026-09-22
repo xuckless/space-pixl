@@ -1,0 +1,13 @@
+# Keeps the actions used by the workflows current. npm dependencies are not
+# covered: the private @xuckless/pixl-engine package on GitHub Packages needs
+# a registry token Dependabot does not have, and engine bumps arrive through
+# bump-engine.yml anyway.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
