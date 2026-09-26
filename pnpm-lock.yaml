@@ -173,8 +173,8 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0(electron@44.4.3(supports-color@7.2.0))
       '@xuckless/pixl-engine':
-        specifier: 0.10.1
-        version: 0.10.1
+        specifier: 0.13.0
+        version: 0.13.0
       electron-log:
         specifier: ^5.4.4
         version: 5.4.4
@@ -1126,26 +1126,26 @@ packages:
     resolution: {integrity: sha512-/5NV/vDALVFDXgLmfsy9TRCBlKwO2LNBFzpzvb9iIj+jR+eSc6DLYYvVOdivT/jm7MtU6TebYuRmzEOI7w40UA==}
     engines: {node: '>=10.0.0'}
 
-  '@xuckless/pixl-engine-darwin-arm64@0.10.1':
-    resolution: {integrity: sha512-Dw7mEp9YLV2KqLqq/9Tl4iVJ194Pq6P9hpiRdzycMOgcEDPDaa9BQcSxi0ReII1FTuqdI15SggqRbAzx8RY9zQ==, tarball: https://npm.pkg.github.com/download/@xuckless/pixl-engine-darwin-arm64/0.10.1/199760bc0ad3b35b1db04224f41af5472595c700}
+  '@xuckless/pixl-engine-darwin-arm64@0.13.0':
+    resolution: {integrity: sha512-vFjON0vv+Wx5K0RQyY7Iid3UwFppFV1EHv0H3Dh3gPlKTVhtTVjdDPM1fYueg+voMe4rXpzc34c98SC08iJf4A==, tarball: https://npm.pkg.github.com/download/@xuckless/pixl-engine-darwin-arm64/0.13.0/9d4630a80a88e2540cf1ebe08ee16e334953221a}
     engines: {node: '>= 20'}
     cpu: [arm64]
     os: [darwin]
 
-  '@xuckless/pixl-engine-darwin-x64@0.10.1':
-    resolution: {integrity: sha512-ORvIHV7fHM0RtbWDabXe6aHJDLpjSW0xH/+p/2GDL1IbjUJNvQ/0jL+Jz97mrDQPnG6PURpGeYBCW7DTqesHaQ==, tarball: https://npm.pkg.github.com/download/@xuckless/pixl-engine-darwin-x64/0.10.1/29f33f641c486cda5ff828e99ef9214b5a0fefdd}
+  '@xuckless/pixl-engine-darwin-x64@0.13.0':
+    resolution: {integrity: sha512-6UFdHrS50Q/i19uUP9akhpS/bhDeotTK0rc69c7CiP9CVRbeqZsmxD9K+J3R8URSxM1NA11GrBIWuc8icZfkzA==, tarball: https://npm.pkg.github.com/download/@xuckless/pixl-engine-darwin-x64/0.13.0/cbb61d607b15ad14e14145f0647519e5bee98ff8}
     engines: {node: '>= 20'}
     cpu: [x64]
     os: [darwin]
 
-  '@xuckless/pixl-engine-win32-x64-msvc@0.10.1':
-    resolution: {integrity: sha512-QWl6Fw5JbL5sd0z4T4QLZTCZKxFQaPN7I9c+OhUlx2IjyxpFqFIfuIimjrZm6AxLJnWVdvSp13vAQ9pWTuu0SA==, tarball: https://npm.pkg.github.com/download/@xuckless/pixl-engine-win32-x64-msvc/0.10.1/61d2ee1deee6c179f4b5ffa8ee2dd5294ca69a35}
+  '@xuckless/pixl-engine-win32-x64-msvc@0.13.0':
+    resolution: {integrity: sha512-S9Lfxagw0Rs3Aarh6BmEKHYactxcbvPW3mUq0NPyV/iZ5HVXg49dXNTapQ5Wo2z1V65Q643TsV8jR7wuGPszDQ==, tarball: https://npm.pkg.github.com/download/@xuckless/pixl-engine-win32-x64-msvc/0.13.0/78d399b2b0f63f91cae19702f7e0afca5bbeed90}
     engines: {node: '>= 20'}
     cpu: [x64]
     os: [win32]
 
-  '@xuckless/pixl-engine@0.10.1':
-    resolution: {integrity: sha512-y8n5JWq/Ighh05HmkNEgGRWNlRH6Hbx70dAYNeDIouuhxV34OPaeitZ3NeMiu0wtNjIVnTTjuZYVoj863W162A==, tarball: https://npm.pkg.github.com/download/@xuckless/pixl-engine/0.10.1/615255fe4003f8208d4f8cf59fe06584ca10858b}
+  '@xuckless/pixl-engine@0.13.0':
+    resolution: {integrity: sha512-Toz0Dw7mN0uiZmeV170V8AxUOJzDe5ddTIwSa0cWHBlY5O31bMom+jlO6Svwp34NCDk+UKVVNlKeyhMiJ3pkOA==, tarball: https://npm.pkg.github.com/download/@xuckless/pixl-engine/0.13.0/241670419d4a8caa6e52341ffe908bbb23616cec}
     engines: {node: '>= 20'}
 
   abbrev@4.0.0:
@@ -3673,20 +3673,20 @@ snapshots:
 
   '@xmldom/xmldom@0.8.15': {}
 
-  '@xuckless/pixl-engine-darwin-arm64@0.10.1':
+  '@xuckless/pixl-engine-darwin-arm64@0.13.0':
     optional: true
 
-  '@xuckless/pixl-engine-darwin-x64@0.10.1':
+  '@xuckless/pixl-engine-darwin-x64@0.13.0':
     optional: true
 
-  '@xuckless/pixl-engine-win32-x64-msvc@0.10.1':
+  '@xuckless/pixl-engine-win32-x64-msvc@0.13.0':
     optional: true
 
-  '@xuckless/pixl-engine@0.10.1':
+  '@xuckless/pixl-engine@0.13.0':
     optionalDependencies:
-      '@xuckless/pixl-engine-darwin-arm64': 0.10.1
-      '@xuckless/pixl-engine-darwin-x64': 0.10.1
-      '@xuckless/pixl-engine-win32-x64-msvc': 0.10.1
+      '@xuckless/pixl-engine-darwin-arm64': 0.13.0
+      '@xuckless/pixl-engine-darwin-x64': 0.13.0
+      '@xuckless/pixl-engine-win32-x64-msvc': 0.13.0
 
   abbrev@4.0.0: {}
 
@@ -4646,7 +4646,7 @@ snapshots:
       es6-error: 4.1.1
       matcher: 3.0.0
       roarr: 2.15.4
-      semver: 7.7.4
+      semver: 7.8.5
       serialize-error: 7.0.1
     optional: true
 
@@ -5031,11 +5031,11 @@ snapshots:
 
   node-abi@4.35.0:
     dependencies:
-      semver: 7.7.4
+      semver: 7.8.5
 
   node-api-version@0.2.1:
     dependencies:
-      semver: 7.7.4
+      semver: 7.8.5
 
   node-exports-info@1.6.2:
     dependencies:
@@ -5051,7 +5051,7 @@ snapshots:
       graceful-fs: 4.2.11
       nopt: 9.0.0
       proc-log: 6.1.0
-      semver: 7.7.4
+      semver: 7.8.5
       tar: 7.5.22
       tinyglobby: 0.2.17
       undici: 6.28.1
