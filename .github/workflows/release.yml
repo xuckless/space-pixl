@@ -61,15 +61,15 @@ jobs:
       # expands from this variable (pnpm ignores ${ENV} in a project .npmrc).
       NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           run_install: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -125,7 +125,7 @@ jobs:
       # `mac-channel` below can publish one feed covering both.
       - name: Save this arch's macOS update manifest
         if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mac-channel-${{ matrix.arch }}
           path: dist/latest-mac.yml
@@ -137,11 +137,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: mac-channel-*
           path: mac-channel
