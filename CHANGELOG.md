@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/xuckless/space-pixl/compare/v0.1.6...v0.1.7) (2026-09-30)
+
+
+### Features
+
+* updated UI and added animations/rendering ([#18](https://github.com/xuckless/space-pixl/issues/18)) ([a8db9ac](https://github.com/xuckless/space-pixl/commit/a8db9ac75245f45189031817bb97d300efe3035e))
+
 ## [0.1.6](https://github.com/xuckless/space-pixl/compare/v0.1.5...v0.1.6) (2026-09-22)
 
 
