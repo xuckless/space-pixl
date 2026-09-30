@@ -1,9 +1,11 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import {
   IPC,
+  type AboutTab,
   type ConvertResult,
   type EngineStatus,
   type InspectResult,
+  type Notices,
   type PickResult,
   type PreviewResult,
   type StatsSummary,
@@ -15,7 +17,20 @@ import type { Plan } from '../shared/plan'
 const api = {
   app: {
     version: (): Promise<string> => ipcRenderer.invoke(IPC.app.version),
-    cpus: (): Promise<number> => ipcRenderer.invoke(IPC.app.cpus)
+    cpus: (): Promise<number> => ipcRenderer.invoke(IPC.app.cpus),
+    notices: (): Promise<Notices | null> => ipcRenderer.invoke(IPC.app.notices),
+    /** The app menu asks for the About dialog. Returns an unsubscribe function. */
+    onOpenAbout: (cb: (tab: AboutTab) => void): (() => void) => {
+      const listener = (_e: IpcRendererEvent, tab: AboutTab): void => cb(tab)
+      ipcRenderer.on(IPC.app.openAbout, listener)
+      return () => ipcRenderer.removeListener(IPC.app.openAbout, listener)
+    },
+    /** The app menu asks for Settings. Returns an unsubscribe function. */
+    onOpenSettings: (cb: () => void): (() => void) => {
+      const listener = (): void => cb()
+      ipcRenderer.on(IPC.app.openSettings, listener)
+      return () => ipcRenderer.removeListener(IPC.app.openSettings, listener)
+    }
   },
   updates: {
     getState: (): Promise<UpdateState> => ipcRenderer.invoke(IPC.updates.getState),

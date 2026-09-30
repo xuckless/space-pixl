@@ -35,9 +35,43 @@ export const IPC = {
   app: {
     version: 'app:version',
     /** renderer → main (invoke): logical CPU count, for the threads dial */
-    cpus: 'app:cpus'
+    cpus: 'app:cpus',
+    /** renderer → main (invoke): the third-party notices (Notices), or null if missing */
+    notices: 'app:notices',
+    /** main → renderer: open the About dialog on a tab (an AboutTab), from the app menu */
+    openAbout: 'app:open-about',
+    /** main → renderer: switch to the Settings tab (⌘, / Ctrl+,) */
+    openSettings: 'app:open-settings'
   }
 } as const
+
+/** The About dialog's tabs. */
+export type AboutTab = 'licence' | 'privacy' | 'third-party' | 'credits'
+
+/** One third-party component, as build/third-party-notices.json lists it. */
+export interface NoticeEntry {
+  name: string
+  version?: string
+  /** The licence, as the component states it. */
+  license: string
+  /** SPDX ids whose full texts are in `Notices.texts`. */
+  licenseIds: string[]
+  source: string
+  use?: string
+  copyright?: string
+  dynamic?: boolean
+  note?: string | null
+  /** The licence file the package itself ships, when it has one. */
+  text?: string | null
+}
+
+/** Everything the app credits, written by scripts/third-party-notices.mjs. */
+export interface Notices {
+  app: string
+  native: NoticeEntry[]
+  packages: NoticeEntry[]
+  texts: Record<string, string>
+}
 
 export type UpdateChannel = 'latest' | 'beta'
 

@@ -1,0 +1,102 @@
+/* Space Pixl — design tokens.
+   The PIXL family's ground (OLED black, lit-end hairlines, spring motion,
+   Space Grotesk over Manrope) carrying Space Pixl's own blue-tinted surfaces,
+   from the Space Pixl UI board and space.pixlfoundation.com. Accent and ok are
+   the only two hues that carry meaning; warn and err are kept for problems. */
+
+:root {
+  color-scheme: dark;
+
+  /* ground and surfaces */
+  --bg: #000000;
+  --bar: #09090b;
+  --surface: #12151b;
+  --surface-2: #0b0d11;
+  --raised: #181c24;
+  --hover: #161a22;
+  --active: #1b2029;
+  --active-2: #242a36;
+  --track: #1f2430;
+  --track-2: #2a3040;
+  --keep: #2f3646;
+  --pop: #151922;
+
+  /* text */
+  --text: #ebe9f3;
+  --text-2: #d5dae6;
+  --text-3: #c9d0de;
+  --muted: #9aa3b5;
+  --muted-2: #8a93a6;
+  --dim: #6f788b;
+
+  /* lines: blue-tinted on surfaces, neutral white on the black ground */
+  --line: rgba(160, 180, 220, 0.12);
+  --line-soft: rgba(160, 180, 220, 0.1);
+  --line-strong: rgba(160, 180, 220, 0.18);
+  --line-hover: rgba(160, 180, 220, 0.26);
+  --hair: rgba(255, 255, 255, 0.08);
+  --hair-2: rgba(255, 255, 255, 0.14);
+
+  /* the Space Pixl blue */
+  --accent: #93a4ff;
+  --accent-hi: #c3ccff;
+  --accent-deep: #4a5bd6;
+  --accent-soft: rgba(147, 164, 255, 0.1);
+  --accent-line: rgba(147, 164, 255, 0.32);
+  --glow: rgba(147, 164, 255, 0.55);
+  --glow-soft: rgba(147, 164, 255, 0.22);
+  --primary-grad: linear-gradient(180deg, #b3bfff, #7486f0);
+  --ink: #0b0d11;
+
+  /* meaning */
+  --ok: #6fd7a3;
+  --ok-soft: rgba(111, 215, 163, 0.1);
+  --ok-line: rgba(111, 215, 163, 0.3);
+  --warn: #f0c26b;
+  --warn-soft: rgba(240, 194, 107, 0.1);
+  --warn-line: rgba(240, 194, 107, 0.34);
+  --err: #f27d85;
+  --err-soft: rgba(242, 125, 133, 0.1);
+  --err-line: rgba(242, 125, 133, 0.34);
+  --red: #e5646b;
+  --green: #5fcf8f;
+  --blue: #6f8cff;
+
+  /* hairlines with a lit end, the family's signature */
+  --hl-x: linear-gradient(
+    90deg,
+    var(--accent) 0px,
+    rgba(147, 164, 255, 0.35) 40px,
+    var(--hair) 120px,
+    var(--hair) 100%
+  );
+  --hl-x-rev: linear-gradient(
+    270deg,
+    var(--accent) 0px,
+    rgba(147, 164, 255, 0.35) 40px,
+    var(--hair) 120px,
+    var(--hair) 100%
+  );
+
+  /* type */
+  --sans: 'Manrope Variable', 'Manrope', system-ui, sans-serif;
+  --disp: 'Space Grotesk Variable', 'Space Grotesk', system-ui, sans-serif;
+  --mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+  /* corners: 12 px cards (the app's own), 2 px on the brand's buttons and chips */
+  --r-xs: 2px;
+  --r-sm: 6px;
+  --r: 8px;
+  --r-md: 10px;
+  --r-lg: 12px;
+  --r-xl: 14px;
+
+  /* motion */
+  --spring: cubic-bezier(0.22, 1.25, 0.36, 1);
+  --spring-soft: cubic-bezier(0.3, 1.12, 0.4, 1);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-hover: 200ms;
+  --dur-toggle: 350ms;
+  --dur-panel: 550ms;
+  --dur-dialog: 600ms;
+}

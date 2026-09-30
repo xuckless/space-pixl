@@ -13,6 +13,9 @@ import { RecommendationPanel } from '../components/RecommendationPanel'
 import { DialsPanel } from '../components/DialsPanel'
 import { PreviewPanel } from '../components/PreviewPanel'
 import { Chip, IconDownload, IconImage, IconWave, Info, Pill } from '../components/ui'
+import { Ambient } from '../components/brand/Ambient'
+import { Loader } from '../components/brand/Loader'
+import { Mark } from '../components/brand/Mark'
 import { errorText } from '../lib/labels'
 
 const PREVIEW_DEBOUNCE_MS = 450
@@ -40,9 +43,12 @@ export function Optimise({
 
   const ready = engine?.status === 'ready'
 
+  const [pickedName, setPickedName] = useState('')
+
   const pick = async (): Promise<void> => {
     const picked = await window.spacePixl.files.pick()
     if (!picked.ok) return
+    setPickedName(picked.path.split(/[\\/]/).pop() ?? '')
     setInspecting(true)
     setInspectError(null)
     setConversion(null)
@@ -107,55 +113,75 @@ export function Optimise({
 
   return (
     <div className="page">
-      <div className="strip rise">
-        <button
-          type="button"
-          className={inspection ? 'btn2 lg' : 'btn'}
-          onClick={() => void pick()}
-          disabled={!ready || inspecting || converting}
-        >
-          {inspecting ? 'Analysing…' : inspection ? 'Choose another image…' : 'Choose an image…'}
-        </button>
-        {inspection ? (
-          <div className="file">
-            <IconImage />
-            <span className="name">{inspection.fileName}</span>
-            <span className="divider" />
-            <span className="fact-inline">{formatBytes(inspection.info.bytes)}</span>
-            <span className="fact-inline">
-              {inspection.info.width} × {inspection.info.height}
-            </span>
-            <span className="fact-inline">{megapixels} MP</span>
-            <Pill>analysed in {formatMs(inspection.ms)}</Pill>
-            <button
-              type="button"
-              className="link"
-              onClick={() => void window.spacePixl.files.reveal(inspection.path)}
-            >
-              reveal
-            </button>
-          </div>
-        ) : (
-          <div className="file">
-            {!ready && <span className="note">{engine?.reason ?? 'The engine is starting.'}</span>}
-          </div>
-        )}
-        {inspection && (
+      {(inspection || inspecting) && (
+        <div className="strip rise">
           <button
             type="button"
-            className={`btn2 ${analysisOpen ? 'on' : ''}`}
-            onClick={() => setAnalysisOpen((o) => !o)}
-            aria-expanded={analysisOpen}
+            className={inspection ? 'btn2 lg' : 'btn'}
+            onClick={() => void pick()}
+            disabled={!ready || inspecting || converting}
           >
-            <IconWave />
-            {analysisOpen ? 'Hide analysis' : 'Show analysis'}
+            {inspecting ? (
+              <Loader label="Analysing…" />
+            ) : inspection ? (
+              'Choose another image…'
+            ) : (
+              'Choose an image…'
+            )}
           </button>
-        )}
-      </div>
+          {inspection ? (
+            <div className="file">
+              <IconImage />
+              <span className="name">{inspection.fileName}</span>
+              <span className="divider" />
+              <span className="fact-inline">{formatBytes(inspection.info.bytes)}</span>
+              <span className="fact-inline">
+                {inspection.info.width} × {inspection.info.height}
+              </span>
+              <span className="fact-inline">{megapixels} MP</span>
+              <Pill>analysed in {formatMs(inspection.ms)}</Pill>
+              <button
+                type="button"
+                className="link"
+                onClick={() => void window.spacePixl.files.reveal(inspection.path)}
+              >
+                reveal
+              </button>
+            </div>
+          ) : (
+            <div className="file">{pickedName && <span className="name">{pickedName}</span>}</div>
+          )}
+          {inspection && (
+            <button
+              type="button"
+              className={`btn2 ${analysisOpen ? 'on' : ''}`}
+              onClick={() => setAnalysisOpen((o) => !o)}
+              aria-expanded={analysisOpen}
+            >
+              <IconWave />
+              {analysisOpen ? 'Hide analysis' : 'Show analysis'}
+            </button>
+          )}
+        </div>
+      )}
       {inspectError && <pre className="error">{errorText(inspectError)}</pre>}
+
+      {inspecting && !inspection && (
+        <section className="card busy-card rise d1">
+          <Loader scale="overlay" label="Measuring every pixel" />
+          <p className="note">
+            Probing the file, sampling its pixels and working out how it was encoded.
+          </p>
+        </section>
+      )}
 
       {inspection && (
         <div className="split-grid" key={inspection.path}>
+          {inspecting && (
+            <div className="busy-over" style={{ borderRadius: 14 }}>
+              <Loader scale="overlay" label="Analysing" />
+            </div>
+          )}
           <div className="col scroll">
             <RecommendationPanel
               recommendation={inspection.recommendation}
@@ -210,8 +236,14 @@ export function Optimise({
                   onClick={() => void convert()}
                   disabled={!ready || converting || previewing || !preview}
                 >
-                  <IconDownload />
-                  {converting ? 'Converting…' : 'Convert beside the original'}
+                  {converting ? (
+                    <Loader label="Converting…" />
+                  ) : (
+                    <>
+                      <IconDownload />
+                      Convert beside the original
+                    </>
+                  )}
                 </button>
                 <span className="note">The original is never touched.</span>
               </div>
@@ -245,17 +277,39 @@ export function Optimise({
       )}
 
       {!inspection && !inspecting && (
-        <section className="card empty rise d1">
-          <span className="label">Start here</span>
-          <p className="lede">
-            Pick an image. Space Pixl will probe the file, measure its pixels, work out how it was
-            encoded, and recommend a conversion — then show you the real result before writing
-            anything.
-          </p>
-          <p className="note">
-            Reads JPEG, PNG, HEIC, AVIF, JPEG XL, TIFF, WebP and camera RAW. Writes JPEG XL, AVIF,
-            WebP, JPEG, PNG, TIFF and DNG.
-          </p>
+        <section className="hero-empty">
+          <Ambient />
+          <div className="hero-empty-in rise">
+            <Mark size={168} motion={ready ? 'idle' : 'busy'} glow label="" />
+            <span className="micro ac">{ready ? 'Start here' : 'Waking the engine'}</span>
+            <h2 className="hero-title">
+              More space. <span>Same pixels.</span>
+            </h2>
+            <p className="lede">
+              Pick an image. Space Pixl probes the file, measures its pixels, works out how it was
+              encoded and recommends a conversion, then shows you the real result before writing
+              anything.
+            </p>
+            <div className="row" style={{ gap: 14, justifyContent: 'center' }}>
+              <button
+                type="button"
+                className="btn lg"
+                onClick={() => void pick()}
+                disabled={!ready}
+              >
+                <IconImage color="currentColor" />
+                Choose an image…
+              </button>
+              {!ready && (
+                <span className="note">{engine?.reason ?? 'The engine is starting.'}</span>
+              )}
+            </div>
+            <div className="rule center" style={{ maxWidth: 420 }} />
+            <p className="note formats">
+              Reads JPEG, PNG, HEIC, AVIF, JPEG XL, TIFF, WebP and camera RAW. Writes JPEG XL, AVIF,
+              WebP, JPEG, PNG, TIFF and DNG. Your original is never touched.
+            </p>
+          </div>
         </section>
       )}
     </div>

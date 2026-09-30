@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import type { EngineStatus, UpdateChannel, UpdateState } from '../../../shared/ipc'
+import type { AboutTab, EngineStatus, UpdateChannel, UpdateState } from '../../../shared/ipc'
 import { formatBytes } from '../../../shared/format'
 import { engineLabel, type Tone } from '../lib/labels'
-import { Dot, Fact, Info, Pill } from '../components/ui'
+import { Dot, Fact, IconScale, Info, Pill } from '../components/ui'
+import { Mark } from '../components/brand/Mark'
+import { Wordmark } from '../components/brand/Wordmark'
 
 function updateLabel(s: UpdateState): { text: string; tone: Tone } {
   switch (s.phase) {
@@ -30,13 +32,15 @@ export function Settings({
   updates,
   onUpdates,
   cpus,
-  appVersion
+  appVersion,
+  onAbout
 }: {
   engine: EngineStatus | undefined
   updates: UpdateState | undefined
   onUpdates: (s: UpdateState) => void
   cpus: number
   appVersion: string
+  onAbout: (tab?: AboutTab) => void
 }): React.JSX.Element {
   const [busy, setBusy] = useState(false)
   const el = engineLabel(engine)
@@ -156,6 +160,42 @@ export function Settings({
             {el.version ? ` · engine v${el.version}` : ''}
             {u?.lastCheckedAt ? ` · checked ${new Date(u.lastCheckedAt).toLocaleTimeString()}` : ''}
           </span>
+        </div>
+      </section>
+
+      <section className="card about-card rise d2" style={{ padding: '22px 24px' }}>
+        <div className="card-head">
+          <div className="lead" style={{ gap: 16 }}>
+            <Mark size={44} detail="small" label="" />
+            <div className="stack tight" style={{ gap: 8 }}>
+              <Wordmark />
+              <span className="spec">
+                v{appVersion || '…'} · PIXL Engine {el.version ? `v${el.version}` : '—'} · © 2026
+                xuckless
+              </span>
+            </div>
+          </div>
+          <button type="button" className="btn2" onClick={() => onAbout('licence')}>
+            <IconScale />
+            About &amp; legal…
+          </button>
+        </div>
+        <div className="rule" />
+        <div className="row" style={{ gap: 18 }}>
+          <button type="button" className="link" onClick={() => onAbout('licence')}>
+            Licence agreement
+          </button>
+          <button type="button" className="link" onClick={() => onAbout('privacy')}>
+            Privacy policy
+          </button>
+          <button type="button" className="link" onClick={() => onAbout('third-party')}>
+            Third-party notices
+          </button>
+          <button type="button" className="link" onClick={() => onAbout('credits')}>
+            Credits
+          </button>
+          <span className="spacer" />
+          <span className="note">Your photos never leave this computer.</span>
         </div>
       </section>
     </div>

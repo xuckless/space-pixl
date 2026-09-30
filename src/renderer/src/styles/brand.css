@@ -1,0 +1,149 @@
+/* Brand pieces: the SPACE PIXL wordmark, lit-end hairlines and the mark's
+   wrapper. Same values as the PIXL Family Kit and space.pixlfoundation.com. */
+
+/* SPACE takes the product blue, PIXL stays white, capitals, wide tracking. */
+.wm {
+  font-family: var(--disp);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.wm em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+/* ── hairlines ───────────────────────────────────────────────────────────── */
+
+/* A 1 px border drawn as a gradient: bright blue at one end, fading into the
+   neutral hairline. `.hl-b` sits under a bar, `.hl-t` over a footer. */
+.hl-b {
+  border-bottom: 1px solid transparent;
+  border-image: var(--hl-x) 1;
+}
+
+.hl-b.rev {
+  border-image: var(--hl-x-rev) 1;
+}
+
+.hl-t {
+  border-top: 1px solid transparent;
+  border-image: var(--hl-x) 1;
+}
+
+.rule {
+  height: 1px;
+  width: 100%;
+  flex-shrink: 0;
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0,
+    rgba(147, 164, 255, 0.35) 48px,
+    rgba(255, 255, 255, 0.09) 160px,
+    rgba(255, 255, 255, 0.09) 100%
+  );
+}
+
+.rule.center {
+  background: radial-gradient(
+    closest-side,
+    rgba(147, 164, 255, 0.8),
+    rgba(147, 164, 255, 0.2) 60%,
+    transparent
+  );
+}
+
+/* A soft light sweeping the top edge of the element every 6 s. */
+.sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.sweep::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(195, 204, 255, 0.9), transparent);
+  animation: sweep 6s var(--ease) infinite;
+  pointer-events: none;
+}
+
+/* ── the mark ────────────────────────────────────────────────────────────── */
+
+.mark {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* The ring brightens while the engine is busy (OrbitMark sets --ring). */
+.mark .orbit-ring {
+  opacity: var(--ring, 1);
+  transition: opacity 0.6s var(--ease);
+}
+
+/* ── the loader ──────────────────────────────────────────────────────────── */
+
+.loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.loader.col {
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+
+.loader .loader-label {
+  color: var(--text-3);
+}
+
+.loader.col .loader-label {
+  font-family: var(--disp);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* A card's busy overlay: its content dims under glass, the loader sits on top. */
+.busy-over {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at center, rgba(11, 13, 17, 0.55), rgba(0, 0, 0, 0.78));
+  -webkit-backdrop-filter: blur(6px) saturate(0.9);
+  backdrop-filter: blur(6px) saturate(0.9);
+  animation: fadeIn 0.35s var(--ease) both;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: var(--r-xs);
+  border: 1px solid rgba(232, 197, 107, 0.4);
+  background: rgba(232, 197, 107, 0.08);
+  color: #e8c56b;
+  font-family: var(--disp);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}

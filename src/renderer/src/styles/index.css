@@ -1,0 +1,16 @@
+/* Space Pixl — the stylesheet, in cascade layers so later layers win without
+   specificity games (the same order as Pixl Playroom's): tokens and base
+   first, then shared primitives and brand pieces, the shell, each view,
+   dialogs, effects, and last the motion and reduced-motion rules. */
+@layer tokens, base, primitives, shell, views, fx, motion;
+
+@import './tokens.css' layer(tokens);
+@import './base.css' layer(base);
+@import './primitives.css' layer(primitives);
+@import './brand.css' layer(primitives);
+@import './shell.css' layer(shell);
+@import './views.css' layer(views);
+@import './dialogs.css' layer(views);
+@import './splash.css' layer(views);
+@import './fx.css' layer(fx);
+@import './motion.css' layer(motion);

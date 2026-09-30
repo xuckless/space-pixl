@@ -4,15 +4,62 @@ export type Tone = 'ok' | 'ac' | 'warn' | 'err' | ''
 
 /* ── Icons ──────────────────────────────────────────────────────────────── */
 
-export function Logo(): React.JSX.Element {
+function Stroke({
+  size = 16,
+  width = 2,
+  children
+}: {
+  size?: number
+  width?: number
+  children: ReactNode
+}): React.JSX.Element {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="3" width="18" height="18" rx="4" stroke="#e8ebf2" strokeWidth="1.6" />
-      <rect x="7" y="7" width="4" height="4" rx="1" fill="var(--accent)" />
-      <rect x="13" y="7" width="4" height="4" rx="1" fill="#3a4152" />
-      <rect x="7" y="13" width="4" height="4" rx="1" fill="#3a4152" />
-      <rect x="13" y="13" width="4" height="4" rx="1" fill="var(--accent)" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={width}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {children}
     </svg>
+  )
+}
+
+export function IconClose(): React.JSX.Element {
+  return (
+    <Stroke size={14} width={2.2}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </Stroke>
+  )
+}
+
+export function IconSearch(): React.JSX.Element {
+  return (
+    <Stroke size={14} width={2}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-4-4" />
+    </Stroke>
+  )
+}
+
+export function IconExternal(): React.JSX.Element {
+  return (
+    <Stroke size={13} width={2}>
+      <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+    </Stroke>
+  )
+}
+
+export function IconScale(): React.JSX.Element {
+  return (
+    <Stroke size={15} width={1.8}>
+      <path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7a3 3 0 0 0 6 0L5 7zM19 7l-3 7a3 3 0 0 0 6 0l-3-7z" />
+    </Stroke>
   )
 }
 
@@ -33,14 +80,14 @@ export function IconInfo({ size = 13 }: { size?: number }): React.JSX.Element {
   )
 }
 
-export function IconImage(): React.JSX.Element {
+export function IconImage({ color = '#8a93a6' }: { color?: string }): React.JSX.Element {
   return (
     <svg
       width="18"
       height="18"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#8a93a6"
+      stroke={color}
       strokeWidth="1.7"
       aria-hidden="true"
     >

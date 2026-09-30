@@ -65,7 +65,7 @@ flowchart LR
     <td width="50%"><a href="docs/screenshots/optimise-dials.webp"><img src="docs/screenshots/optimise-dials.webp" alt="Dials panel: format, effort, threads, size and pixels, metadata, colour and rounding"></a><br><sub><b>Dials.</b> The whole converter surface; parts a target does not use are greyed out.</sub></td>
   </tr>
   <tr>
-    <td><a href="docs/screenshots/optimise-converted.webp"><img src="docs/screenshots/optimise-converted.webp" alt="Converted: saved 1.43 MB (18.6%) in 354 ms, written beside the original"></a><br><sub><b>Converted.</b> Saved 1.43 MB in 354 ms, written beside the original.</sub></td>
+    <td><a href="docs/screenshots/optimise-converted.webp"><img src="docs/screenshots/optimise-converted.webp" alt="Converted: saved 1.43 MB (18.6%), written beside the original"></a><br><sub><b>Converted.</b> Saved 1.43 MB (18.6%), written beside the original.</sub></td>
     <td><a href="docs/screenshots/stats.webp"><img src="docs/screenshots/stats.webp" alt="Stats page: lifetime storage reclaimed, files converted, average reduction, engine time"></a><br><sub><b>Stats.</b> Lifetime storage reclaimed, per day, by format, biggest single wins.</sub></td>
   </tr>
 </table>
@@ -278,6 +278,12 @@ This repository is public so the app can be read: how a recommendation is made, 
 does, what is written to disk. It cannot be built from here. The PIXL engine is a private,
 compiled component distributed only as binaries to the app's own build pipeline, and the app does
 nothing without it.
+
+The app itself comes with its [licence agreement](legal/EULA.md) and
+[privacy policy](legal/PRIVACY.md) (both drafts until launch), and with notices for every
+open-source component it ships ([`build/THIRD_PARTY_NOTICES.txt`](build/THIRD_PARTY_NOTICES.txt)).
+In the app they are under **Settings → About & legal**, or the **Help** menu; online at
+[space.pixlfoundation.com/legal](https://space.pixlfoundation.com/legal/eula/).
 
 <sub>Copyright © 2026 xuckless. All rights reserved. The source is published for reference only;
 see [LICENSE](LICENSE). The PIXL engine is a separate, closed component and is not made available

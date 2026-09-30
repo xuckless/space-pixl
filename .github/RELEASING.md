@@ -85,5 +85,32 @@ Windows works unsigned with a SmartScreen warning.
 
 `docs/` is served from `main` at https://xuckless.github.io/space-pixl/. No build step; the
 site fetches the latest release from the GitHub API with the stamped version as fallback.
-Screenshots in `docs/screenshots/` were captured from the built app over the Chrome DevTools
-Protocol at 1240×860 @2x with the native engine.
+Screenshots in `docs/screenshots/` come from the built app with the native engine, at
+1240×860 @2x; see _Screenshots_ below.
+
+## Brand, legal and screenshots
+
+The look follows the PIXL Family Kit's Space Pixl boards and space.pixlfoundation.com: the
+mark's geometry lives in `src/shared/mark.ts`, shared by the app (`components/brand/`) and the
+scripts below. Each script's output is committed.
+
+- **Icons and installer art** — `pnpm brand` (macOS; needs the Electron binary). Draws the
+  macOS tile (`build/icon.icns`, `build/icon.png`), the plateless Windows and Linux mark
+  (`build/icon.ico`, `build/icons/`, `resources/icon.png`), the DMG background
+  (`build/background.png` and `@2x`), the NSIS sidebar and header (`build/installer*.bmp`)
+  and the Pages site's `docs/favicon.ico` and `docs/icon.png`.
+- **Third-party notices** — `pnpm notices`, after `electron-vite build` (`pnpm build` runs
+  both; CI and the release do too). Writes `build/THIRD_PARTY_NOTICES.txt` and
+  `build/third-party-notices.json`, which ship beside the app and fill the About dialog.
+  The engine's native parts are listed by hand in `build/third-party.json`: keep it in step
+  with the engine's platform package and Cargo.lock when the engine changes. Add
+  `--web ../pixl-web` to refresh space.pixlfoundation.com's copy.
+- **Legal texts** — `legal/EULA.md` and `legal/PRIVACY.md`, bundled into the About dialog.
+  They are drafts (`draft: true`; bracketed parts to fill in) and match
+  `pixl-web/src/legal/space-*.md`, which serve space.pixlfoundation.com/legal/.
+- **Screenshots** — `pnpm build`, then
+  `node scripts/shots.mjs --raw <a .CR2> --jpeg <a .jpg> [--web ../pixl-web]` (needs
+  `cwebp`). Opens both samples in the built app with a throwaway profile and writes
+  `docs/screenshots/` (the JPEG, at 1240×860) and, with `--web`, pixl-web's
+  `public/space/shots/` (the RAW). The published shots use pixl-engine's
+  `tests/images/raw_test.CR2` and `jpeg_test.jpeg`.

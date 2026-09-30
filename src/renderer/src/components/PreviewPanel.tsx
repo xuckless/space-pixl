@@ -4,6 +4,7 @@ import { formatBytes, formatMs, formatPercent, savingFraction } from '../../../s
 import { useObjectUrl } from '../lib/useObjectUrl'
 import { errorText } from '../lib/labels'
 import { Chip, IconArrow, IconCheck, Info, Pill } from './ui'
+import { Loader } from './brand/Loader'
 
 type Mode = 'before' | 'split' | 'after'
 
@@ -45,7 +46,11 @@ export function PreviewPanel({
       <div className="card-head">
         <h2 className="title">Preview</h2>
         <div className="tools" style={{ gap: 10 }}>
-          {previewing && <Pill tone="ac">encoding…</Pill>}
+          {previewing && (
+            <Pill tone="ac">
+              <Loader label="encoding…" />
+            </Pill>
+          )}
           <div className="seggroup" role="group" aria-label="Compare">
             {MODES.map((m) => (
               <button
@@ -104,6 +109,11 @@ export function PreviewPanel({
           />
         )}
         {previewing && <span className="shimmer" />}
+        {previewing && !afterUrl && (
+          <div className="stage-empty">
+            <Loader scale="card" label="Encoding the preview" />
+          </div>
+        )}
         {mode === 'split' && afterUrl && zoom === 'fit' && (
           <>
             <div className="handle" style={{ left: `${split}%` }} />

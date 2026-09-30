@@ -1,0 +1,287 @@
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+
+.app {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* The app bar: near-black, a lit-end hairline under it, the mark and the
+   SPACE PIXL wordmark on the left. */
+.header {
+  position: relative;
+  z-index: 2;
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 20px 0 18px;
+  background: var(--bar);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.brand .wm {
+  font-size: 13px;
+}
+
+.brand .version {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--hair);
+}
+
+.tab {
+  position: relative;
+  height: 34px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--r);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--disp);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  transition:
+    color var(--dur-hover) var(--ease),
+    background var(--dur-hover) var(--ease);
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab.on {
+  background: linear-gradient(180deg, rgba(147, 164, 255, 0.14), rgba(147, 164, 255, 0.04));
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(147, 164, 255, 0.22);
+}
+
+/* the 18 px underline that springs in under the active tab */
+.tab::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--glow);
+  transform: translateX(-50%) scaleX(0);
+  transition: transform var(--dur-toggle) var(--spring);
+}
+
+.tab.on::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--raised);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.status .mono {
+  font-size: 11.5px;
+  color: var(--muted-2);
+}
+
+.status.ok {
+  color: var(--ok);
+  border-color: rgba(111, 215, 163, 0.28);
+  background: rgba(111, 215, 163, 0.06);
+}
+
+.status.warn {
+  color: var(--warn);
+  border-color: var(--warn-line);
+  background: rgba(240, 194, 107, 0.06);
+}
+
+.status.err {
+  color: var(--err);
+  border-color: var(--err-line);
+  background: rgba(242, 125, 133, 0.06);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 0 0 rgba(111, 215, 163, 0.5);
+  animation: pulse 2.2s ease-out infinite;
+  flex-shrink: 0;
+}
+
+.dot.sm {
+  width: 6px;
+  height: 6px;
+}
+
+.dot.warn {
+  background: var(--warn);
+  animation: none;
+}
+
+.dot.err {
+  background: var(--err);
+  animation: none;
+}
+
+.dot.idle {
+  background: var(--muted);
+  animation: none;
+}
+
+.page {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 24px 24px;
+  min-height: 0;
+}
+
+.page.narrow {
+  max-width: 860px;
+}
+
+.page.scroll {
+  overflow-y: auto;
+}
+
+/* A scrolling page is a flex column; its cards must keep their height and let
+   the page scroll instead of being squeezed. Only matters for a card with
+   `overflow: hidden` (the stats hero), whose min-height is otherwise 0. */
+.page.scroll > * {
+  flex-shrink: 0;
+}
+
+.scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--track-2) transparent;
+}
+
+.split-grid {
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: 560px minmax(0, 1fr);
+  gap: 24px;
+  min-height: 0;
+}
+
+.split-grid > .col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.split-grid > .col.scroll {
+  padding-right: 6px;
+}
+
+@media (max-width: 1100px) {
+  .split-grid {
+    grid-template-columns: minmax(0, 1fr);
+    overflow-y: auto;
+  }
+  .split-grid > .col.scroll {
+    overflow: visible;
+    padding-right: 0;
+  }
+}
+
+.two-up {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .two-up {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stack.tight {
+  gap: 8px;
+}
+
+.stack.loose {
+  gap: 20px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.row.between {
+  justify-content: space-between;
+}
+
+.row.nowrap {
+  flex-wrap: nowrap;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(160, 180, 220, 0.2);
+}

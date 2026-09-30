@@ -1,0 +1,173 @@
+/* ── Motion ──────────────────────────────────────────────────────────────── */
+
+.rise {
+  animation: rise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.d1 {
+  animation-delay: 0.05s;
+}
+
+.d2 {
+  animation-delay: 0.12s;
+}
+
+.d3 {
+  animation-delay: 0.19s;
+}
+
+.d4 {
+  animation-delay: 0.26s;
+}
+
+.d5 {
+  animation-delay: 0.33s;
+}
+
+.d6 {
+  animation-delay: 0.4s;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(111, 215, 163, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(111, 215, 163, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(111, 215, 163, 0);
+  }
+}
+
+@keyframes shim {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes meter {
+  from {
+    width: 0;
+  }
+}
+
+@keyframes dlgIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.04) translateY(-4px);
+  }
+}
+
+@keyframes driftA {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(140px, 90px) scale(1.15);
+  }
+}
+
+@keyframes driftB {
+  from {
+    transform: translate(0, 0) scale(1.1);
+  }
+  to {
+    transform: translate(-160px, -60px) scale(0.9);
+  }
+}
+
+@keyframes driftC {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(90px, -120px) scale(1.2);
+  }
+}
+
+/* A light that sweeps a panel's top edge now and then. */
+@keyframes sweep {
+  0%,
+  70% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: every animation lands on its last frame at once, and loops
+   stop. The orbit mark reads the same preference and stands still. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
