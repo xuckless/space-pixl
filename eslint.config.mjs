@@ -30,8 +30,9 @@ export default defineConfig(
   },
   {
     // electron-builder imports the hooks in build/ as plain JavaScript at
-    // package time, so they cannot carry type annotations.
-    files: ['build/**/*.mjs'],
+    // package time, and scripts/ run under plain Node, so neither can carry
+    // type annotations.
+    files: ['build/**/*.mjs', 'scripts/**/*.mjs'],
     rules: {
       '@typescript-eslint/explicit-function-return-type': 'off'
     }

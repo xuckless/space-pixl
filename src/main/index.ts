@@ -10,6 +10,12 @@ import { registerIpc } from './ipc'
 import { Pipeline } from './pipeline'
 import { Store } from './db'
 import { setupUpdater } from './updater'
+import { buildMenu } from './menu'
+
+// A throwaway profile for automation (scripts/shots.mjs): its own database,
+// settings and logs, so screenshots never touch a real library's stats.
+if (process.env['SPACE_PIXL_USER_DATA'])
+  app.setPath('userData', process.env['SPACE_PIXL_USER_DATA'])
 
 log.initialize()
 log.transports.file.level = 'info'
@@ -36,6 +42,8 @@ function createWindow(): void {
     minWidth: 900,
     minHeight: 640,
     show: false,
+    // Matches the splash, so the window never flashes white before it paints.
+    backgroundColor: '#000000',
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -66,6 +74,7 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle(IPC.app.version, () => app.getVersion())
+  buildMenu()
 
   store = Store.open(join(app.getPath('userData'), 'space-pixl.db'))
   store.reconcile()

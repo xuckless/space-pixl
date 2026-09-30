@@ -1,11 +1,13 @@
 /** Every renderer-facing handler. Results are `{ ok: true, ... }` or `{ ok: false, error }`; nothing throws across the bridge. */
 import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { readFile } from 'fs/promises'
 import { cpus } from 'os'
 import log from 'electron-log/main'
 import {
   IPC,
   type ConvertResult,
   type InspectResult,
+  type Notices,
   type PickResult,
   type PreviewResult,
   type StatsSummary
@@ -14,6 +16,7 @@ import type { Plan } from '../shared/plan'
 import type { EngineClient } from './engine/client'
 import { Pipeline, toAppError } from './pipeline'
 import type { Store } from './db'
+import { paths } from './paths'
 
 const IMAGE_EXTENSIONS = [
   'jpg',
@@ -41,6 +44,15 @@ const IMAGE_EXTENSIONS = [
 export function registerIpc(engine: EngineClient, pipeline: Pipeline, store: Store): void {
   ipcMain.handle(IPC.engine.status, () => engine.getStatus())
   ipcMain.handle(IPC.app.cpus, () => cpus().length)
+  ipcMain.handle(IPC.app.notices, async (): Promise<Notices | null> => {
+    try {
+      return JSON.parse(await readFile(paths.notices('third-party-notices.json'), 'utf8'))
+    } catch (err) {
+      // Development before `pnpm notices` has run: the dialog says how to make them.
+      log.warn('third-party notices unavailable', err)
+      return null
+    }
+  })
 
   ipcMain.handle(IPC.files.pick, async (e): Promise<PickResult> => {
     const win = BrowserWindow.fromWebContents(e.sender) ?? undefined

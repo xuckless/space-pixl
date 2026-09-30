@@ -1,0 +1,103 @@
+{
+  "_comment": "Native components Space Pixl ships that npm cannot report: the PIXL engine's linked libraries and Rust crates, and the Electron runtime. Read by scripts/third-party-notices.mjs; `license` names a text in build/licenses/. Keep in step with the @xuckless/pixl-engine version in package.json (its platform package lists the shared libraries it ships) and with pixl-engine's Cargo.lock.",
+  "components": [
+    {
+      "name": "libheif",
+      "use": "HEIC and AVIF files, shipped as a separate shared library (the engine's platform package)",
+      "license": "LGPL-3.0-only",
+      "copyright": "Copyright (c) Dirk Farin, struktur AG and the libheif contributors",
+      "source": "https://github.com/strukturag/libheif",
+      "dynamic": true
+    },
+    {
+      "name": "libde265",
+      "use": "HEVC decoding for HEIC, shipped as a separate shared library",
+      "license": "LGPL-3.0-only",
+      "copyright": "Copyright (c) struktur AG, Dirk Farin and the libde265 contributors",
+      "source": "https://github.com/strukturag/libde265",
+      "dynamic": true
+    },
+    {
+      "name": "libaom",
+      "use": "AV1 for AVIF files, shipped as a separate shared library",
+      "license": ["BSD-2-Clause", "AOM-Patent-License-1.0"],
+      "copyright": "Copyright (c) 2016, Alliance for Open Media. All rights reserved.",
+      "source": "https://aomedia.googlesource.com/aom/",
+      "dynamic": true
+    },
+    {
+      "name": "libjxl",
+      "use": "JPEG XL files, linked into the engine",
+      "license": "BSD-3-Clause",
+      "copyright": "Copyright (c) the JPEG XL Project Authors. All rights reserved.",
+      "source": "https://github.com/libjxl/libjxl"
+    },
+    {
+      "name": "Highway",
+      "use": "SIMD for libjxl",
+      "license": "Apache-2.0",
+      "copyright": "Copyright Google LLC",
+      "source": "https://github.com/google/highway"
+    },
+    {
+      "name": "Brotli",
+      "use": "compression for libjxl",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.",
+      "source": "https://github.com/google/brotli"
+    },
+    {
+      "name": "libjpeg-turbo",
+      "use": "JPEG files, linked into the engine",
+      "license": ["IJG", "BSD-3-Clause", "Zlib"],
+      "copyright": "Copyright (c) the libjpeg-turbo Project authors. This software is based in part on the work of the Independent JPEG Group.",
+      "source": "https://github.com/libjpeg-turbo/libjpeg-turbo"
+    },
+    {
+      "name": "libwebp",
+      "use": "WebP files, linked into the engine",
+      "license": "BSD-3-Clause",
+      "copyright": "Copyright (c) 2010, Google Inc. All rights reserved.",
+      "source": "https://chromium.googlesource.com/webm/libwebp"
+    },
+    {
+      "name": "Little CMS",
+      "use": "colour management, linked into the engine",
+      "license": "MIT",
+      "copyright": "Copyright (c) Marti Maria Saguer",
+      "source": "https://github.com/mm2/Little-CMS"
+    },
+    {
+      "name": "rawler",
+      "use": "camera RAW decoding and DNG writing, linked into the engine",
+      "license": "LGPL-2.1-only",
+      "copyright": "Copyright (c) Daniel Vogelbacher and the dnglab contributors",
+      "source": "https://github.com/dnglab/dnglab",
+      "note": "Statically linked. LGPL-2.1 section 6 obligations for a statically linked library are under review."
+    },
+    {
+      "name": "jpegxl-sys",
+      "use": "Rust bindings to libjxl, linked into the engine",
+      "license": "GPL-3.0-only",
+      "licenseName": "GPL-3.0-or-later",
+      "copyright": "Copyright (c) the jpegxl-rs authors",
+      "source": "https://github.com/inflation/jpegxl-rs",
+      "note": "Under review: a GPL component in a proprietary binary."
+    },
+    {
+      "name": "Other Rust crates in PIXL Engine",
+      "use": "the engine's remaining dependencies (png, tiff, fast_image_resize, weezl, image, and others), under MIT, Apache-2.0 and similar permissive licences",
+      "license": ["MIT", "Apache-2.0"],
+      "copyright": "Copyright (c) their respective authors; see each crate's page on crates.io",
+      "source": "https://crates.io",
+      "note": "A complete per-crate list will come from the engine's own release build."
+    },
+    {
+      "name": "Electron and Chromium",
+      "use": "the application runtime; Chromium's own notices are in LICENSES.chromium.html beside the application",
+      "license": "MIT",
+      "copyright": "Copyright (c) Electron contributors. Copyright (c) 2013-2020 GitHub Inc.",
+      "source": "https://github.com/electron/electron"
+    }
+  ]
+}

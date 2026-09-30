@@ -26,6 +26,15 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
   - '!{.github,release-please-config.json,.release-please-manifest.json}'
   - '!docs/**'
+  - '!{legal,scripts}/**'
+
+# The third-party notices (scripts/third-party-notices.mjs, run by `pnpm build`):
+# the text for anyone who looks inside the app, the JSON for the About dialog.
+extraResources:
+  - from: build/THIRD_PARTY_NOTICES.txt
+    to: THIRD_PARTY_NOTICES.txt
+  - from: build/third-party-notices.json
+    to: third-party-notices.json
 
 # Native addons cannot be loaded from inside the asar archive. The engine
 # binding ships as `@xuckless/pixl-engine` plus one platform package
@@ -80,8 +89,22 @@ mac:
     NSDocumentsFolderUsageDescription: Space Pixl scans folders you choose for images.
     NSDownloadsFolderUsageDescription: Space Pixl scans folders you choose for images.
 
+# The window people install from: build/background.png (and @2x), drawn by
+# `pnpm brand` from the PIXL Family Kit's DMG board, with the app on the left
+# and the Applications link on the right of the orbit's arc.
 dmg:
   artifactName: ${name}-mac-${arch}.${ext}
+  iconSize: 128
+  window:
+    width: 660
+    height: 400
+  contents:
+    - x: 165
+      y: 180
+    - x: 495
+      y: 180
+      type: link
+      path: /Applications
 
 win:
   executableName: space-pixl
@@ -95,14 +118,23 @@ win:
   signtoolOptions:
     publisherName: xuckless
 
+# An assisted installer, so its pages carry the brand art (build/
+# installerSidebar.bmp, installerHeader.bmp, drawn by `pnpm brand`); a
+# one-click installer shows none. Updates still install silently:
+# electron-updater runs the new installer with /S and relaunches.
 nsis:
   artifactName: ${name}-win-x64-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
-  oneClick: true
+  oneClick: false
   perMachine: false
-  # electron-updater installs silently and relaunches.
+  allowToChangeInstallationDirectory: true
+  installerSidebar: build/installerSidebar.bmp
+  uninstallerSidebar: build/installerSidebar.bmp
+  installerHeader: build/installerHeader.bmp
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
   differentialPackage: true
 
 # Linux is a local testing target, not a shipped one: nothing publishes it and
@@ -114,7 +146,8 @@ nsis:
 linux:
   executableName: space-pixl
   category: Graphics
-  icon: build/icon.png
+  # hicolor PNGs, 16 to 1024 (build/icons/<n>x<n>.png, drawn by `pnpm brand`)
+  icon: build/icons
   synopsis: Reclaim storage by re-encoding your photo library.
   target:
     - target: AppImage

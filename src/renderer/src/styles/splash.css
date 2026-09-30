@@ -1,0 +1,122 @@
+/* The launch splash (shell/Splash.tsx), from the PIXL Family Kit's Space board. */
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #000;
+  color: var(--text);
+  overflow: hidden;
+  transition: opacity 0.5s var(--ease);
+}
+
+.splash.out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.splash-center {
+  position: absolute;
+  inset: 0 0 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 44px;
+}
+
+.splash-mark {
+  animation: splashIn 0.9s var(--spring) both;
+}
+
+.splash-word {
+  font-size: 28px;
+  /* the tracking hangs off the last letter; pad the first to keep it centred */
+  padding-left: 0.28em;
+  animation: splashWord 1s var(--ease) 0.35s both;
+}
+
+.splash-foot {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.splash-track {
+  position: relative;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.splash-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(147, 164, 255, 0.2), var(--accent) 85%, #fff);
+  box-shadow: 0 0 12px rgba(147, 164, 255, 0.8);
+  transition: width 0.4s var(--ease);
+}
+
+.splash-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.splash-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #b8b5c7;
+}
+
+.splash-status span {
+  animation: splashStatus 1.6s ease-in-out infinite;
+}
+
+.splash-version {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #6d7488;
+}
+
+@keyframes splashIn {
+  from {
+    transform: scale(0.86);
+    opacity: 0;
+    filter: blur(12px);
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes splashWord {
+  from {
+    letter-spacing: 1.1em;
+    opacity: 0;
+    filter: blur(10px);
+  }
+  to {
+    letter-spacing: 0.28em;
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes splashStatus {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}

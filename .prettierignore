@@ -6,3 +6,5 @@ CHANGELOG.md
 tsconfig.json
 tsconfig.*.json
 .release-please-manifest.json
+build/third-party-notices.json
+build/THIRD_PARTY_NOTICES.txt

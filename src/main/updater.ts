@@ -50,8 +50,8 @@ export function setupUpdater(): void {
 
   if (!app.isPackaged && !process.env.SPACE_PIXL_FORCE_UPDATER) {
     // In development there is nothing to update against. Set
-    // SPACE_PIXL_FORCE_UPDATER=1 and point dev-app-update.yml at the bucket to
-    // exercise the flow from `pnpm dev`.
+    // SPACE_PIXL_FORCE_UPDATER=1 (dev-app-update.yml points at this
+    // repository's GitHub releases) to exercise the flow from `pnpm dev`.
     state = { ...state, phase: 'disabled' }
     ipcMain.handle(IPC.updates.check, () => state)
     ipcMain.handle(IPC.updates.install, () => undefined)
